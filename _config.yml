@@ -11,6 +11,11 @@ author: CyrusChen
 language: en
 timezone: 'Asia/Shanghai'
 
+base_info:
+  title: Cyrus's Blog
+  author: Cyrus Chen
+  url: 
+
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
 url: http://example.com
@@ -106,3 +111,4 @@ deploy:
   repo: https://github.com/CyrusChen-2007/CyrusChen-2007.github.io
   # example, https://github.com/hexojs/hexojs.github.io
   branch: gh-pages
+  message: Site updated {{ now('YYYY-MM-DD HH:mm:ss') }}
