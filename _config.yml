@@ -11,10 +11,16 @@ author: CyrusChen
 language: en
 timezone: 'Asia/Shanghai'
 
-base_info:
-  title: Cyrus's Blog
-  author: Cyrus Chen
-  url: 
+search:
+  path: search.json
+  field: post
+  content: true
+  format: striptags
+
+feed:
+  type: atom
+  path: atom.xml
+  limit: 20
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
