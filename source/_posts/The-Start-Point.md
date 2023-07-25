@@ -3,10 +3,23 @@ title: The Start Point.
 date: 2023-07-25 18:28:29
 tags: 
 - meditation
-- growth
 categories: 
 - meditation
+photos: https://raw.githubusercontent.com/CyrusChen-2007/picbed/main/img/IMG_6121.JPG?token=AOFJESRDCD4XMNSTGXPMKCDEX7ANK
 ---
 
+![ ](https://raw.githubusercontent.com/CyrusChen-2007/picbed/main/img/IMG_6121.JPG?token=AOFJESRDCD4XMNSTGXPMKCDEX7ANK)
 # Here is a start point...
 
+To be honest, I have been admiring those who have a well-regulated online garden of their own. Please Imagine that you have an idyllic house among tremendous skyscrapers--How excellent the feeling is! Constructing a personal blog also brings me the amazing feelings akin to it--You divided a space which is purely clean from this well-polluted world, guarding your precious thoughts underneath your deepest mind. Since several years ago, the idea that to build a personal blog have been being slipped into my idea part, however it is hidden for some reasons...
+
+# Several chances for reemergence
+That I come up to recall this personal blog idea is simultaneously inspired by many considerations.
+One is that my worries about my writing skills. I have participated in 2 composition contest recently, John Locke Essay Competition and Harvard International Review Academic Writing Competition. These 2 contest for me is obviously......extremely hard...( smile face :) ) Except for those contest bits, I know very well about how essential the writing skill is in future life -- In high school, I have to take Ap capstone, which is an introductory course in academic research. Also, essay is everywhere, in contest, exams, homework assignments... Not to mention what I need to write in college and future working..., It must be more various and frequent. -- So,I started to ponder on my English composition and deduce some improvement methods. It is definitely a nightmare for me...though, I have to **make** it. 
+
+Another, a more motivated one, is to share my meditation and record my track. Several month ago, I created a **meditation memo**. It include various contents. I have written some life thoughts, complains, even enlightening conversations or small moments of regret. Once I have something pop into my brain, I will immediately open this document and record them as detailed as possible -- because ideas fly off easily... Continue doing this, I found that...I am making progress...somewhen and somewhere. This is very satisfactory, which provide me an amazing motivation to keep working. Inspired by this good habit, I started to write more things as I believe writing is an excellent way to hold precious thoughts and memories and keep them from being washed away. For example, I would have a week summary at every Sunday and list the task in next week after it, which helps me very well have sense of total control on my daily life. I also want to write something every day, in order to keep my brain activated. And, As you may think, these naturally pushes the blog idea back to surface. 
+
+
+Here today, 25th, July, 2023, I have finished this little blog site. Only 8 hours from deciding. 
+
+I hope this project will be both beneficial, at least a little bit, for me and you guys who love pondering.
