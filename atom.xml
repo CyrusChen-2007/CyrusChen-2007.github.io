@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2023-07-25T03:52:37.077Z</updated>
+  <updated>2023-07-25T10:51:30.584Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>The Start Point.</title>
+    <link href="http://example.com/2023/07/25/The-Start-Point/"/>
+    <id>http://example.com/2023/07/25/The-Start-Point/</id>
+    <published>2023-07-25T10:28:29.000Z</published>
+    <updated>2023-07-25T10:51:30.584Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="Here-is-a-start-point…"><a href="#Here-is-a-start-point…" class="headerlink" title="Here is a start point…"></a>Here is a start point…</h1>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;Here-is-a-start-point…&quot;&gt;&lt;a href=&quot;#Here-is-a-start-point…&quot; class=&quot;headerlink&quot; title=&quot;Here is a start point…&quot;&gt;&lt;/a&gt;Here is a start poin</summary>
+      
+    
+    
+    
+    <category term="meditation" scheme="http://example.com/categories/meditation/"/>
+    
+    
+    <category term="meditation" scheme="http://example.com/tags/meditation/"/>
+    
+    <category term="growth" scheme="http://example.com/tags/growth/"/>
+    
+  </entry>
   
   <entry>
     <title>Hello World</title>
