@@ -1,0 +1,282 @@
+{
+  "links_backward_paths" : {
+
+  },
+  "filename_path_info" : {
+    "index" : "about\/index.md",
+    "这是中文" : "_posts\/这是中文.md",
+    "hello-world" : "_posts\/hello-world.md",
+    "the-start-point" : "_posts\/The-Start-Point.md"
+  },
+  "toc_info" : {
+    "_posts\/这是中文.md" : [
+
+    ],
+    "_posts\/hello-world.md" : [
+      "0,## Quick Start",
+      "1,### Create a new post",
+      "2,### Run server",
+      "3,### Generate static files",
+      "4,### Deploy to remote sites"
+    ],
+    "tags\/index.md" : [
+
+    ],
+    "categories\/index.md" : [
+
+    ],
+    "about\/index.md" : [
+      "0,## About me...",
+      "1,## About this site:",
+      "2,## 关于语言 | About some Language bit | de lingua",
+      "3,## Extra things:",
+      "4,## Why I am still writing blog nowadays"
+    ],
+    "links\/index.md" : [
+
+    ],
+    "_posts\/The-Start-Point.md" : [
+      "0,# Here is a start point...",
+      "1,# Several chances for reemergence"
+    ]
+  },
+  "todo_list" : {
+
+  },
+  "links_paths" : {
+
+  },
+  "files_mtime_info" : {
+    "_posts\/hello-world.md" : 1690257157,
+    "about\/index.md" : 1690347766,
+    "_posts\/The-Start-Point.md" : 1690346237,
+    "categories\/index.md" : 1690268480,
+    "links\/index.md" : 1690268492,
+    "_posts\/这是中文.md" : 1690334029,
+    "tags\/index.md" : 1690268486
+  },
+  "tags_tags" : {
+
+  },
+  "relative_folders" : [
+    "_posts",
+    "about",
+    "tags",
+    "links",
+    "categories"
+  ],
+  "toc_hash_info" : {
+
+  },
+  "relative_paths" : [
+    "_posts\/hello-world.md",
+    "_posts\/这是中文.md",
+    "_posts\/The-Start-Point.md",
+    "about\/index.md",
+    "tags\/index.md",
+    "links\/index.md",
+    "categories\/index.md"
+  ],
+  "path_name_info" : {
+    "_posts\/hello-world.md" : "Hello World",
+    "about\/index.md" : "about",
+    "_posts\/The-Start-Point.md" : "The Start Point.",
+    "categories\/index.md" : "categories",
+    "_posts\/这是中文.md" : "这是中文",
+    "links\/index.md" : "links",
+    "tags\/index.md" : "tags"
+  },
+  "documents_meta_info" : {
+    "_posts\/The-Start-Point.md" : {
+      "raw_metadata_str" : "title: The Start Point.\ndate: 2023-07-25 18:28:29\ntags: \n- meditation\ncategories: \n- meditation\nphotos: https:\/\/s2.loli.net\/2023\/07\/26\/TIRbCWSHP9wQivK.jpg",
+      "title" : "The Start Point.",
+      "tags" : "",
+      "categories" : "",
+      "date" : "2023-07-25 18:28:29",
+      "photos" : "https:\/\/s2.loli.net\/2023\/07\/26\/TIRbCWSHP9wQivK.jpg"
+    },
+    "about\/index.md" : {
+      "comment" : "true",
+      "raw_metadata_str" : "title: about\ndate: 2023-07-25 14:58:04\ncomment: true",
+      "title" : "about",
+      "date" : "2023-07-25 14:58:04"
+    },
+    "links\/index.md" : {
+      "date" : "2023-07-25 15:01:32",
+      "title" : "links",
+      "raw_metadata_str" : "title: links\ndate: 2023-07-25 15:01:32"
+    },
+    "tags\/index.md" : {
+      "raw_metadata_str" : "title: tags\ndate: 2023-07-25 15:01:26",
+      "date" : "2023-07-25 15:01:26",
+      "title" : "tags"
+    },
+    "_posts\/这是中文.md" : {
+      "raw_metadata_str" : "title: 这是中文\ndate: 2023-07-26 09:13:49\ntags:",
+      "title" : "这是中文",
+      "tags" : "",
+      "date" : "2023-07-26 09:13:49"
+    },
+    "_posts\/hello-world.md" : {
+      "raw_metadata_str" : "title: Hello World",
+      "title" : "Hello World"
+    },
+    "categories\/index.md" : {
+      "title" : "categories",
+      "date" : "2023-07-25 15:01:20",
+      "raw_metadata_str" : "title: categories\ndate: 2023-07-25 15:01:20"
+    }
+  },
+  "words_info" : {
+    "tags\/index.md" : 3,
+    "links\/index.md" : 3,
+    "about\/index.md" : 362,
+    "_posts\/这是中文.md" : 7,
+    "_posts\/hello-world.md" : 109,
+    "_posts\/The-Start-Point.md" : 463,
+    "categories\/index.md" : 3
+  },
+  "name_path_info" : {
+    "这是中文" : "_posts\/这是中文.md",
+    "the start point." : "_posts\/The-Start-Point.md",
+    "hello world" : "_posts\/hello-world.md",
+    "links" : "links\/index.md",
+    "tags" : "tags\/index.md",
+    "about" : "about\/index.md",
+    "categories" : "categories\/index.md"
+  },
+  "wiki_data_version" : "0.1",
+  "tags_paths" : {
+    "_posts\/这是中文.md" : [
+
+    ],
+    "links\/index.md" : [
+
+    ],
+    "about\/index.md" : [
+
+    ],
+    "tags\/index.md" : [
+
+    ],
+    "_posts\/hello-world.md" : [
+
+    ],
+    "_posts\/The-Start-Point.md" : [
+
+    ],
+    "categories\/index.md" : [
+
+    ]
+  },
+  "documents_info" : {
+    "tags\/index.md" : {
+      "images" : [
+
+      ],
+      "attachments" : [
+
+      ],
+      "links" : [
+
+      ]
+    },
+    "_posts\/The-Start-Point.md" : {
+      "links" : [
+
+      ],
+      "images" : [
+
+      ],
+      "attachments" : [
+
+      ]
+    },
+    "categories\/index.md" : {
+      "links" : [
+
+      ],
+      "images" : [
+
+      ],
+      "attachments" : [
+
+      ]
+    },
+    "_posts\/hello-world.md" : {
+      "images" : [
+
+      ],
+      "links" : [
+        {
+          "name" : "Hexo",
+          "url" : "https:\/\/hexo.io\/"
+        },
+        {
+          "url" : "https:\/\/hexo.io\/docs\/",
+          "name" : "documentation"
+        },
+        {
+          "name" : "troubleshooting",
+          "url" : "https:\/\/hexo.io\/docs\/troubleshooting.html"
+        },
+        {
+          "url" : "https:\/\/github.com\/hexojs\/hexo\/issues",
+          "name" : "GitHub"
+        },
+        {
+          "url" : "https:\/\/hexo.io\/docs\/writing.html",
+          "name" : "Writing"
+        },
+        {
+          "url" : "https:\/\/hexo.io\/docs\/server.html",
+          "name" : "Server"
+        },
+        {
+          "url" : "https:\/\/hexo.io\/docs\/generating.html",
+          "name" : "Generating"
+        },
+        {
+          "name" : "Deployment",
+          "url" : "https:\/\/hexo.io\/docs\/one-command-deployment.html"
+        }
+      ],
+      "attachments" : [
+
+      ]
+    },
+    "about\/index.md" : {
+      "attachments" : [
+
+      ],
+      "links" : [
+
+      ],
+      "images" : [
+
+      ]
+    },
+    "links\/index.md" : {
+      "links" : [
+
+      ],
+      "images" : [
+
+      ],
+      "attachments" : [
+
+      ]
+    },
+    "_posts\/这是中文.md" : {
+      "attachments" : [
+
+      ],
+      "links" : [
+
+      ],
+      "images" : [
+
+      ]
+    }
+  }
+}

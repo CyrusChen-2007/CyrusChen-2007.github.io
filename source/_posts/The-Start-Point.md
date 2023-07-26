@@ -5,10 +5,10 @@ tags:
 - meditation
 categories: 
 - meditation
-photos: https://raw.githubusercontent.com/CyrusChen-2007/picbed/main/img/IMG_6121.JPG?token=AOFJESRDCD4XMNSTGXPMKCDEX7ANK
+photos: https://s2.loli.net/2023/07/26/TIRbCWSHP9wQivK.jpg
 ---
 
-![ ](https://raw.githubusercontent.com/CyrusChen-2007/picbed/main/img/IMG_6121.JPG?token=AOFJESRDCD4XMNSTGXPMKCDEX7ANK)
+![](https://s2.loli.net/2023/07/26/TIRbCWSHP9wQivK.jpg)
 # Here is a start point...
 
 To be honest, I have been admiring those who have a well-regulated online garden of their own. Please Imagine that you have an idyllic house among tremendous skyscrapers--How excellent the feeling is! Constructing a personal blog also brings me the amazing feelings akin to it--You divided a space which is purely clean from this well-polluted world, guarding your precious thoughts underneath your deepest mind. Since several years ago, the idea that to build a personal blog have been being slipped into my idea part, however it is hidden for some reasons...
