@@ -23,7 +23,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background: #f0f2f5; 
+            background: #f0f2f5;
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
             overflow: hidden;
@@ -45,29 +45,12 @@
             50% { transform: translate(30px, -50px); }
         }
 
-        /* --- LAYOUT LAYERS (Z-INDEX FIX) --- */
-        
-        /* 1. The Universe (Bubbles) - Bottom Layer */
-        #universe-layer {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; /* FIXED: Lower than screen */
-            pointer-events: none; /* Allows clicking through empty space */
-            display: none; /* Hidden by default for students */
-        }
-
-        #thread-canvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; 
-            pointer-events: none;
-            display: none;
-        }
-
-        /* 2. The Screens (Input Box, Login) - Top Layer */
+        /* --- LAYOUT --- */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
-            z-index: 10; /* FIXED: Higher than bubbles */
+            z-index: 10;
         }
         .screen.active { opacity: 1; pointer-events: auto; }
 
@@ -82,8 +65,6 @@
             display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
             max-width: 500px; width: 90%;
             text-align: center;
-            /* Ensure card blocks bubbles visually if they were visible */
-            z-index: 11; 
         }
 
         input, textarea {
@@ -103,7 +84,19 @@
         button.secondary { background: white; color: var(--text-main); border: 1px solid #ddd; }
         button.small { padding: 6px 12px; font-size: 0.8rem; }
 
-        /* --- BUBBLE STYLES --- */
+        /* --- BUBBLE UNIVERSE --- */
+        /* Changed: Hidden by default so students don't see it until submission */
+        #universe-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 20; pointer-events: none;
+            display: none; 
+        }
+        
+        #thread-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 15; pointer-events: none;
+        }
+
         .bubble {
             position: absolute;
             width: fit-content; max-width: 280px; min-width: 120px;
@@ -114,7 +107,7 @@
             border-radius: 20px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.05);
             text-align: left;
-            pointer-events: auto; /* Re-enable clicks on bubbles */
+            pointer-events: auto;
             transform-origin: center;
             will-change: transform, left, top;
             display: flex; flex-direction: column; gap: 8px;
@@ -151,25 +144,27 @@
         }
 
         /* --- UI OVERLAYS (HUD) --- */
+        /* Changed: added flex-wrap and auto height to allow full prompt display */
         .hud-bar {
             position: fixed; z-index: 50; padding: 15px 25px;
             background: rgba(255,255,255,0.85); backdrop-filter: blur(15px);
             border-radius: 16px; border: 1px solid white;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             display: flex; gap: 20px; align-items: center;
-            flex-wrap: wrap; 
+            flex-wrap: wrap; /* Allows prompt to drop to new line */
             height: auto;
             max-width: 90vw;
         }
         
         /* Teacher Top Bar */
-        #teacher-hud { top: 20px; left: 50%; transform: translateX(-50%); justify-content: center; }
+        #teacher-hud { top: 20px; left: 50%; transform: translateX(-50%); justify-content: center;}
         
         /* Student Top Bar */
         #student-hud { top: 20px; left: 50%; transform: translateX(-50%); width: 80%; max-width: 800px; justify-content: center; text-align: center; }
 
         .divider { width: 1px; height: 30px; background: #ddd; }
         
+        /* Changed: Removed nowrap and ellipsis, added width for break-line */
         .prompt-display-text { 
             font-family: 'DM Serif Display', serif; 
             font-size: 1.3rem; 
@@ -180,7 +175,10 @@
             margin-top: 10px;
         }
 
-        .hud-controls { display: flex; gap: 20px; align-items: center; }
+        /* Controls wrapper to keep buttons on one line */
+        .hud-controls {
+            display: flex; gap: 20px; align-items: center;
+        }
 
         /* Reply Modal */
         #reply-modal {
@@ -248,7 +246,7 @@
                     <button class="secondary small" onclick="setPrompt()">Set</button>
                 </div>
                 <div id="t-prompt-edit-btn" style="display: none;">
-                    <button class="secondary small" onclick="editPrompt()">✎ Edit</button>
+                    <button class="secondary small" onclick="editPrompt()">✎ Edit Prompt</button>
                 </div>
 
                 <div class="divider"></div>
@@ -295,17 +293,20 @@
         const APP_ID = 'inkwell-v5-final-';
         let myPeer, myId;
         let role = 'student'; 
-        let connections = []; 
-        let hostConn = null;  
+        let connections = []; // Teacher: list of student conns
+        let hostConn = null;  // Student: conn to teacher
         
+        // Data Store (Synced)
         let bubbles = []; 
         let currentPrompt = "";
         
+        // Physics Engine
         let physicsLoopId;
         const canvas = document.getElementById('thread-canvas');
         const ctx = canvas.getContext('2d');
         let width, height;
 
+        // Interaction State
         let activeReplyParentId = null;
 
         // --- ROUTING ---
@@ -324,12 +325,6 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // --- VISIBILITY HELPERS ---
-        function showUniverse() {
-            document.getElementById('universe-layer').style.display = 'block';
-            document.getElementById('thread-canvas').style.display = 'block';
-        }
-
         // --- TEACHER LOGIC ---
         function initTeacher() {
             role = 'teacher';
@@ -340,18 +335,17 @@
                 myId = id;
                 document.getElementById('display-code').innerText = code;
                 document.getElementById('teacher-hud').style.display = 'flex';
-                
-                // Teacher sees universe immediately
-                showUniverse();
+                // CHANGED: Show the universe immediately for teacher
+                document.getElementById('universe-layer').style.display = 'block'; 
                 router('universe');
-                
-                startPhysicsLoop(); 
+                startPhysicsLoop(); // Teacher runs physics
             });
 
             myPeer.on('connection', (conn) => {
                 connections.push(conn);
                 conn.on('data', (data) => handleServerData(data, conn));
                 
+                // Sync new student
                 setTimeout(() => {
                     conn.send({ type: 'SYNC_FULL', bubbles: bubbles, prompt: currentPrompt });
                 }, 500);
@@ -417,6 +411,7 @@
         }
 
         function broadcastState() {
+            // Teacher sends physics update
             const payload = bubbles.map(b => ({
                 id: b.id, x: b.x, y: b.y, 
                 text: b.text, author: b.author, 
@@ -451,7 +446,9 @@
         function handleClientData(data) {
             if(data.type === 'PROMPT') {
                 currentPrompt = data.text;
+                // Update Writing View
                 document.getElementById('student-prompt-view').innerText = currentPrompt;
+                // Update Universe View (Top Bar)
                 document.getElementById('s-universe-prompt').innerText = currentPrompt;
             }
             if(data.type === 'SYNC_FULL') {
@@ -459,7 +456,6 @@
                 document.getElementById('student-prompt-view').innerText = currentPrompt;
                 document.getElementById('s-universe-prompt').innerText = currentPrompt;
                 
-                // We sync bubbles, but they remain hidden via CSS until submitResponse()
                 data.bubbles.forEach(remoteB => {
                    if(!bubbles.find(b => b.id === remoteB.id)) {
                        spawnLocalBubble(remoteB);
@@ -487,13 +483,16 @@
             if(!txt) return;
             hostConn.send({ type: 'SUBMIT', text: txt, author: window.studentName });
             
+            // Switch to Universe View Immediately
             router('universe');
             document.getElementById('student-hud').style.display = 'flex';
             
-            // REVEAL UNIVERSE
-            showUniverse();
-
+            // CHANGED: Enable visibility of the universe now that they have submitted
+            document.getElementById('universe-layer').style.display = 'block';
+            
+            // Ensure prompt is synced to top bar
             document.getElementById('s-universe-prompt').innerText = currentPrompt || "Joined Class";
+            
             startClientPhysics(); 
         }
 
@@ -606,9 +605,11 @@
 
                 let fx = 0, fy = 0;
 
+                // Center Gravity
                 fx += (centerX - b.x) * 0.0005;
                 fy += (centerY - b.y) * 0.0005;
 
+                // Repulsion
                 bubbles.forEach((other, j) => {
                     if (i === j) return;
                     const dx = b.x - other.x;
@@ -623,6 +624,7 @@
                     }
                 });
 
+                // Spring Force (Replies)
                 if (b.parentId) {
                     const parent = bubbles.find(p => p.id === b.parentId);
                     if (parent) {
@@ -698,21 +700,27 @@
             closeReplyModal();
         }
 
-        // --- ROULETTE LOGIC ---
+        // --- CHANGED: RANDOMIZER LOGIC ---
         function startRoulette() {
+            // Filter: Not a winner AND Not a reply
             const candidates = bubbles.filter(b => !b.isWinner && !b.parentId);
             
             if(candidates.length === 0) {
+                // Check if there are ANY main bubbles at all
                 const allMainBubbles = bubbles.filter(b => !b.parentId);
-                if(allMainBubbles.length > 0) {
+                
+                if (allMainBubbles.length > 0) {
+                    // Logic: All main bubbles have been chosen. Reset cycle.
                     alert("All responses have been chosen! Starting new cycle.");
+                    
                     bubbles.forEach(b => { 
                         b.isWinner = false; 
-                        document.getElementById('dom-'+b.id)?.classList.remove('winner');
+                        const el = document.getElementById('dom-'+b.id);
+                        if(el) el.classList.remove('winner');
                     });
                     broadcastState();
                 } else {
-                    alert("No responses to pick from!");
+                    alert("No student responses to pick from yet!");
                 }
                 return;
             }
@@ -721,11 +729,11 @@
             const maxCycles = 20;
             let speed = 100;
             
-            bubbles.forEach(b => { 
-                document.getElementById('dom-'+b.id)?.classList.remove('highlight');
-            });
+            // Clean visual state of previous pick if exists
+            document.querySelectorAll('.bubble').forEach(el => el.classList.remove('highlight'));
 
             function step() {
+                // Flash effect
                 document.querySelectorAll('.bubble').forEach(el => el.classList.remove('highlight'));
                 
                 const rand = candidates[Math.floor(Math.random() * candidates.length)];
@@ -736,8 +744,10 @@
                 if(cycles < maxCycles) {
                     setTimeout(step, speed);
                 } else {
+                    // Winner selected
                     rand.isWinner = true;
                     broadcastState();
+                    // Pull to center
                     rand.vx = (width/2 - rand.x) * 0.1;
                     rand.vy = (height/2 - rand.y) * 0.1;
                 }
