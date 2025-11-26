@@ -45,12 +45,29 @@
             50% { transform: translate(30px, -50px); }
         }
 
-        /* --- LAYOUT --- */
+        /* --- LAYOUT LAYERS (Z-INDEX FIX) --- */
+        
+        /* 1. The Universe (Bubbles) - Bottom Layer */
+        #universe-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; /* FIXED: Lower than screen */
+            pointer-events: none; /* Allows clicking through empty space */
+            display: none; /* Hidden by default for students */
+        }
+
+        #thread-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; 
+            pointer-events: none;
+            display: none;
+        }
+
+        /* 2. The Screens (Input Box, Login) - Top Layer */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
-            z-index: 10;
+            z-index: 10; /* FIXED: Higher than bubbles */
         }
         .screen.active { opacity: 1; pointer-events: auto; }
 
@@ -65,6 +82,8 @@
             display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
             max-width: 500px; width: 90%;
             text-align: center;
+            /* Ensure card blocks bubbles visually if they were visible */
+            z-index: 11; 
         }
 
         input, textarea {
@@ -84,21 +103,7 @@
         button.secondary { background: white; color: var(--text-main); border: 1px solid #ddd; }
         button.small { padding: 6px 12px; font-size: 0.8rem; }
 
-        /* --- BUBBLE UNIVERSE --- */
-        /* UPDATE: Hidden by default so students don't see it early */
-        #universe-layer {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 20; pointer-events: none;
-            display: none; 
-        }
-        
-        /* UPDATE: Hidden by default */
-        #thread-canvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 15; pointer-events: none;
-            display: none;
-        }
-
+        /* --- BUBBLE STYLES --- */
         .bubble {
             position: absolute;
             width: fit-content; max-width: 280px; min-width: 120px;
@@ -109,7 +114,7 @@
             border-radius: 20px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.05);
             text-align: left;
-            pointer-events: auto;
+            pointer-events: auto; /* Re-enable clicks on bubbles */
             transform-origin: center;
             will-change: transform, left, top;
             display: flex; flex-direction: column; gap: 8px;
@@ -152,7 +157,6 @@
             border-radius: 16px; border: 1px solid white;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             display: flex; gap: 20px; align-items: center;
-            /* UPDATE: Allow wrapping for long prompts */
             flex-wrap: wrap; 
             height: auto;
             max-width: 90vw;
@@ -166,13 +170,12 @@
 
         .divider { width: 1px; height: 30px; background: #ddd; }
         
-        /* UPDATE: Full width, wrapping text */
         .prompt-display-text { 
             font-family: 'DM Serif Display', serif; 
             font-size: 1.3rem; 
             width: 100%;
             text-align: center;
-            white-space: normal; /* Wraps text */
+            white-space: normal;
             color: var(--text-main);
             margin-top: 10px;
         }
@@ -321,7 +324,7 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // --- VISIBILITY HELPERS (NEW) ---
+        // --- VISIBILITY HELPERS ---
         function showUniverse() {
             document.getElementById('universe-layer').style.display = 'block';
             document.getElementById('thread-canvas').style.display = 'block';
@@ -338,7 +341,7 @@
                 document.getElementById('display-code').innerText = code;
                 document.getElementById('teacher-hud').style.display = 'flex';
                 
-                // UPDATE: Teacher needs to see the universe immediately
+                // Teacher sees universe immediately
                 showUniverse();
                 router('universe');
                 
@@ -456,6 +459,7 @@
                 document.getElementById('student-prompt-view').innerText = currentPrompt;
                 document.getElementById('s-universe-prompt').innerText = currentPrompt;
                 
+                // We sync bubbles, but they remain hidden via CSS until submitResponse()
                 data.bubbles.forEach(remoteB => {
                    if(!bubbles.find(b => b.id === remoteB.id)) {
                        spawnLocalBubble(remoteB);
@@ -486,7 +490,7 @@
             router('universe');
             document.getElementById('student-hud').style.display = 'flex';
             
-            // UPDATE: Show the universe layers ONLY after submitting
+            // REVEAL UNIVERSE
             showUniverse();
 
             document.getElementById('s-universe-prompt').innerText = currentPrompt || "Joined Class";
@@ -694,13 +698,11 @@
             closeReplyModal();
         }
 
-        // --- UPDATED: SMART ROULETTE ---
+        // --- ROULETTE LOGIC ---
         function startRoulette() {
-            // Filter: Ignore replies, ignore already won
             const candidates = bubbles.filter(b => !b.isWinner && !b.parentId);
             
             if(candidates.length === 0) {
-                // Check if any main bubbles exist at all
                 const allMainBubbles = bubbles.filter(b => !b.parentId);
                 if(allMainBubbles.length > 0) {
                     alert("All responses have been chosen! Starting new cycle.");
