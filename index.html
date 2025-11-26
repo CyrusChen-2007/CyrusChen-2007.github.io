@@ -1,25 +1,3 @@
-This is a complete redesign. I have replaced the dark, noisy aesthetic with a clean, vivacious "Glass & Light" theme. I also built a custom Physics Engine in JavaScript to handle the bubbles so they collide, squeeze, and float naturally like liquid glass.
-
-Key Features Added:
-
-Liquid Glass Physics: Bubbles are translucent, blur the background, and physically push each other away (collision detection).
-
-Smart Randomizer: Tracks history. It won't pick the same student twice until everyone has been picked.
-
-Dynamic Teacher View: Shows the active prompt and a real-time list of joined students.
-
-Pop-up Spawning: New answers burst from the center of the screen, pushing existing bubbles aside.
-
-How to Host
-
-Save as index.html and deploy to GitHub Pages.
-
-code
-Html
-play_circle
-download
-content_copy
-expand_less
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,7 +8,7 @@ expand_less
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <!-- Libraries -->
     <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
@@ -38,12 +16,10 @@ expand_less
     <style>
         :root {
             --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
-            --glass-bg: rgba(255, 255, 255, 0.25);
-            --glass-border: rgba(255, 255, 255, 0.6);
             --text-main: #2d3436;
             --text-light: #636e72;
-            --accent: #6c5ce7; /* Vivacious Purple/Blue */
-            --accent-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            --accent: #6c5ce7; 
+            --accent-hover: #5649b9;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -57,13 +33,9 @@ expand_less
             height: 100vh;
         }
 
-        /* --- VIVACIOUS BACKGROUND ANIMATION --- */
+        /* --- BACKGROUND ANIMATION --- */
         .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.6;
-            z-index: -1;
+            position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.6; z-index: -1;
             animation: floatOrb 20s infinite ease-in-out;
         }
         .orb-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #ff9a9e; animation-delay: 0s; }
@@ -91,44 +63,31 @@ expand_less
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            padding: 3rem;
-            border-radius: 24px;
+            padding: 3rem; border-radius: 24px;
             border: 1px solid white;
             box-shadow: 0 20px 40px rgba(0,0,0,0.05);
             display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
         }
 
         input, textarea {
-            background: rgba(255,255,255,0.5);
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 12px;
-            padding: 15px;
-            font-size: 1.1rem;
-            width: 300px;
-            font-family: inherit;
-            outline: none;
-            transition: all 0.3s;
+            background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 12px; padding: 15px; font-size: 1.1rem; width: 300px;
+            font-family: inherit; outline: none; transition: all 0.3s;
         }
-        input:focus, textarea:focus { background: white; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
-        
+        input:focus, textarea:focus { background: white; border-color: var(--accent); }
         textarea { width: 100%; min-width: 400px; height: 150px; resize: none; }
 
         button {
-            background: var(--text-main); color: white;
-            border: none; padding: 15px 35px; border-radius: 50px;
-            font-size: 1rem; font-weight: 600; cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            background: var(--text-main); color: white; border: none;
+            padding: 15px 35px; border-radius: 50px; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
         }
         button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         button.secondary { background: white; color: var(--text-main); border: 1px solid rgba(0,0,0,0.1); }
+        button.small { padding: 8px 16px; font-size: 0.85rem; }
 
-        /* --- TEACHER DASHBOARD LAYOUT --- */
-        #screen-teacher {
-            display: grid;
-            grid-template-rows: auto 1fr auto;
-            align-items: start;
-            padding: 20px;
-        }
+        /* --- TEACHER DASHBOARD --- */
+        #screen-teacher { display: grid; grid-template-rows: auto 1fr auto; align-items: start; padding: 20px; }
 
         .dashboard-top {
             display: flex; justify-content: space-between; align-items: flex-start;
@@ -141,9 +100,12 @@ expand_less
         .control-group { display: flex; flex-direction: column; gap: 8px; }
         .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); font-weight: 600; }
         .big-code { font-size: 2.5rem; font-family: 'DM Serif Display', serif; color: var(--accent); line-height: 1; }
-        .prompt-text { font-size: 1.5rem; font-family: 'DM Serif Display', serif; max-width: 600px; line-height: 1.2; }
+        
+        .prompt-text { 
+            font-size: 1.3rem; font-family: 'DM Serif Display', serif; 
+            max-width: 600px; line-height: 1.2; color: var(--text-main);
+        }
 
-        /* Student List Sidebar */
         .student-sidebar {
             position: absolute; top: 140px; right: 20px; bottom: 100px; width: 220px;
             background: rgba(255,255,255,0.4); backdrop-filter: blur(10px);
@@ -151,52 +113,58 @@ expand_less
             overflow-y: auto; z-index: 40;
         }
         .student-item { font-size: 0.9rem; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .student-item:last-child { border: none; }
 
         /* --- BUBBLE CANVAS --- */
         #bubble-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 20; overflow: hidden; pointer-events: none; /* Let clicks pass through if needed, handled by JS */
+            z-index: 20; overflow: hidden; pointer-events: none; 
         }
         
+        /* Updated Bubble Style for Full Text Support */
         .bubble {
             position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.45);
+            width: fit-content;
+            max-width: 320px; /* Limit width */
+            min-width: 140px;
+            height: auto;
+            
+            border-radius: 24px; /* Rounded rect instead of perfect circle for long text */
+            background: rgba(255, 255, 255, 0.55);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: inset 0 0 20px rgba(255,255,255,0.5), 0 10px 20px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             text-align: center;
-            padding: 20px;
-            overflow: hidden;
+            padding: 25px;
+            
             cursor: pointer;
-            transition: transform 0.3s;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             will-change: transform, left, top;
             color: var(--text-main);
+            pointer-events: auto;
         }
 
         .bubble-text { 
-            font-size: 1rem; line-height: 1.3; font-weight: 500;
-            pointer-events: none;
-            max-height: 80%; overflow: hidden;
-            text-overflow: ellipsis;
+            font-size: 1rem; line-height: 1.4; font-weight: 500;
+            word-wrap: break-word; /* Ensure wrapping */
+            white-space: pre-wrap; /* Respect new lines */
         }
         
         .bubble-author {
-            margin-top: 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--accent);
+            margin-top: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--accent);
         }
 
-        /* Selected State (Big & Center) */
+        /* Selected State */
         .bubble.selected {
             z-index: 100 !important;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.98);
             box-shadow: 0 30px 60px rgba(108, 92, 231, 0.3);
             border: 2px solid var(--accent);
+            transform: translate(-50%, -50%) scale(1.2) !important; /* Scale handled by class now for ease */
         }
 
-        /* --- BOTTOM BAR --- */
         .dashboard-bottom {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
             z-index: 100;
@@ -244,20 +212,25 @@ expand_less
             
             <div class="control-group" style="flex-grow: 1; margin: 0 40px;">
                 <span class="label">Current Prompt</span>
+                
                 <!-- Input Mode -->
                 <div id="prompt-input-area" style="display: flex; gap: 10px;">
                     <input type="text" id="teacher-prompt-input" placeholder="Type a prompt..." style="width: 100%;">
-                    <button onclick="setPrompt()" style="padding: 10px 20px;">Set</button>
+                    <button class="small" onclick="setPrompt()">Set</button>
                 </div>
+                
                 <!-- Display Mode -->
-                <div id="prompt-display-area" class="prompt-text" style="display: none;"></div>
+                <div id="prompt-display-wrapper" style="display: none; align-items: center; gap: 15px;">
+                    <div id="prompt-display-text" class="prompt-text"></div>
+                    <button class="secondary small" onclick="editPrompt()">✎ Edit</button>
+                </div>
             </div>
 
             <div class="control-group">
                 <span class="label">Timer</span>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <span id="timer-display" style="font-family: 'DM Serif Display'; font-size: 2rem;">05:00</span>
-                    <button onclick="startTimer()" style="padding: 5px 15px; font-size: 0.8rem;">▶</button>
+                    <button class="small" onclick="startTimer()">▶</button>
                 </div>
             </div>
         </div>
@@ -290,7 +263,7 @@ expand_less
             <div id="submit-section" style="margin-top: 20px; width: 100%;">
                 <button onclick="submitResponse()" style="width: 100%;">Submit Response</button>
             </div>
-            <div id="submitted-msg" style="display: none; text-align: center; color: var(--accent); margin-top: 20px;">
+            <div id="submitted-msg" style="display: none; text-align: center; color: var(--accent); margin-top: 20px; font-weight: 600;">
                 Response Floating in the Ether.
             </div>
         </div>
@@ -298,14 +271,15 @@ expand_less
 
     <script>
         // --- APP STATE ---
-        const APP_ID = 'inkwell-v2-';
+        const APP_ID = 'inkwell-v3-'; // Bumped version
         let myPeer = null;
         let connections = []; // Teacher: list of student conns
         let hostConn = null;  // Student: conn to teacher
         let students = [];    // Teacher: list of {id, name}
+        let currentPrompt = ""; // Teacher: store prompt for late joiners
         
         // Physics State
-        let bubbles = []; // { id, x, y, vx, vy, radius, text, author, el, selected }
+        let bubbles = []; 
         let pickedHistory = new Set();
         let animationFrameId;
 
@@ -329,6 +303,15 @@ expand_less
 
             myPeer.on('connection', (conn) => {
                 connections.push(conn);
+                
+                // FIX 2: Send current prompt immediately to late joiners
+                if(currentPrompt) {
+                    // Slight delay to ensure connection is ready
+                    setTimeout(() => {
+                        conn.send({ type: 'PROMPT', text: currentPrompt });
+                    }, 500);
+                }
+
                 conn.on('data', (data) => handleTeacherData(data, conn));
                 conn.on('close', () => removeStudent(conn.peer));
             });
@@ -355,18 +338,26 @@ expand_less
             updateStudentList();
         }
 
+        // FIX 1: PROMPT EDITING LOGIC
         function setPrompt() {
             const txt = document.getElementById('teacher-prompt-input').value;
             if(!txt) return;
 
+            currentPrompt = txt; // Store global
+
             // Update UI
             document.getElementById('prompt-input-area').style.display = 'none';
-            const display = document.getElementById('prompt-display-area');
-            display.style.display = 'block';
-            display.innerText = txt;
+            document.getElementById('prompt-display-wrapper').style.display = 'flex';
+            document.getElementById('prompt-display-text').innerText = txt;
 
             // Broadcast
             connections.forEach(c => c.send({ type: 'PROMPT', text: txt }));
+        }
+
+        function editPrompt() {
+            document.getElementById('prompt-display-wrapper').style.display = 'none';
+            document.getElementById('prompt-input-area').style.display = 'flex';
+            document.getElementById('teacher-prompt-input').focus();
         }
 
         let timerInt;
@@ -418,31 +409,33 @@ expand_less
             document.getElementById('submitted-msg').style.display = 'block';
         }
 
-        // --- BUBBLE PHYSICS ENGINE (The Core Request) ---
+        // --- BUBBLE PHYSICS ENGINE (UPDATED) ---
         
         function spawnBubble(author, text, id) {
             const container = document.getElementById('bubble-layer');
             const el = document.createElement('div');
             el.className = 'bubble';
-            el.innerHTML = `<div class="bubble-text">"${text}"</div><div class="bubble-author">${author}</div>`;
+            el.innerHTML = `<div class="bubble-text">${text}</div><div class="bubble-author">${author}</div>`;
             
-            // Random Size between 120 and 180
-            const size = 140 + Math.random() * 60; 
-            el.style.width = size + 'px';
-            el.style.height = size + 'px';
-
+            // 1. Add to DOM first to get natural size
+            el.style.left = '50%';
+            el.style.top = '50%';
             container.appendChild(el);
 
-            // Spawn at CENTER screen (popping up)
+            // FIX 3: Measure natural dimensions after render for accurate physics
+            const rect = el.getBoundingClientRect();
+            // Use largest dimension as collision radius, plus buffer
+            const physicalRadius = Math.max(rect.width, rect.height) / 2 + 5; 
+
+            // Spawn settings
             const b = {
-                id: id + Math.random(), // Unique internal ID
+                id: id + Math.random(),
                 el: el,
                 x: window.innerWidth / 2,
                 y: window.innerHeight / 2,
-                vx: (Math.random() - 0.5) * 8, // Fast initial velocity
-                vy: (Math.random() - 0.5) * 8,
-                radius: size / 2 + 10, // Buffer
-                mass: size,
+                vx: (Math.random() - 0.5) * 15, // Fast initial burst
+                vy: (Math.random() - 0.5) * 15,
+                radius: physicalRadius, 
                 selected: false
             };
             bubbles.push(b);
@@ -461,30 +454,35 @@ expand_less
         function updatePhysics() {
             const width = window.innerWidth;
             const height = window.innerHeight;
+            const centerX = width / 2;
+            const centerY = height / 2;
 
             for (let i = 0; i < bubbles.length; i++) {
                 let b = bubbles[i];
-                if (b.selected) continue; // Don't move the selected one with physics
+                if (b.selected) continue; 
 
-                // 1. Move
+                // 1. Center Attraction (Gravity) - FIX 4
+                // Pull bubbles gently toward the center
+                const dx = centerX - b.x;
+                const dy = centerY - b.y;
+                b.vx += dx * 0.0003; // Weak force
+                b.vy += dy * 0.0003;
+
+                // 2. Move
                 b.x += b.vx;
                 b.y += b.vy;
 
-                // 2. Wall Bounce (Dampened)
+                // 3. Wall Bounce
                 if (b.x - b.radius < 0) { b.x = b.radius; b.vx *= -0.8; }
                 if (b.x + b.radius > width) { b.x = width - b.radius; b.vx *= -0.8; }
                 if (b.y - b.radius < 0) { b.y = b.radius; b.vy *= -0.8; }
                 if (b.y + b.radius > height) { b.y = height - b.radius; b.vy *= -0.8; }
 
-                // 3. Friction (Slow down slightly)
-                b.vx *= 0.98;
-                b.vy *= 0.98;
+                // 4. Friction
+                b.vx *= 0.96;
+                b.vy *= 0.96;
 
-                // 4. Gentle Float (Ambient motion)
-                b.vx += (Math.random() - 0.5) * 0.05;
-                b.vy += (Math.random() - 0.5) * 0.05;
-
-                // 5. Collision & Squeezing (Repulsion)
+                // 5. Collision (Repulsion)
                 for (let j = i + 1; j < bubbles.length; j++) {
                     let b2 = bubbles[j];
                     if (b2.selected) continue;
@@ -495,13 +493,10 @@ expand_less
                     let minDist = b.radius + b2.radius;
 
                     if (dist < minDist) {
-                        // Overlap detected - Push apart
                         let angle = Math.atan2(dy, dx);
                         let tx = Math.cos(angle);
                         let ty = Math.sin(angle);
-                        
-                        // Spring force (the "Squeeze")
-                        let force = (minDist - dist) * 0.05; 
+                        let force = (minDist - dist) * 0.08; 
 
                         b.vx -= tx * force;
                         b.vy -= ty * force;
@@ -511,48 +506,43 @@ expand_less
                 }
 
                 // Apply to DOM
-                b.el.style.left = (b.x - b.radius + 10) + 'px'; // +10 correction for padding diff
-                b.el.style.top = (b.y - b.radius + 10) + 'px';
-                // Reset visual styles if not selected
-                b.el.style.transform = `scale(1)`;
+                b.el.style.left = b.x + 'px';
+                b.el.style.top = b.y + 'px';
+                
+                // Centering transform handle by CSS mostly, but we set Top/Left to center
+                b.el.style.transform = `translate(-50%, -50%)`;
                 b.el.classList.remove('selected');
             }
         }
 
         // --- RANDOMIZER ---
         function randomizeBubble() {
-            // 1. Reset any currently selected bubble
+            // Reset previous
             const prev = bubbles.find(b => b.selected);
             if (prev) {
                 prev.selected = false;
-                // Give it a little push away so it doesn't stick
-                prev.vx = (Math.random() - 0.5) * 5;
-                prev.vy = (Math.random() - 0.5) * 5;
+                prev.vx = (Math.random() - 0.5) * 10; // Kick it away
+                prev.vy = (Math.random() - 0.5) * 10;
             }
 
-            // 2. Filter available bubbles
             const available = bubbles.filter(b => !pickedHistory.has(b.id));
 
             if (available.length === 0) {
                 if (bubbles.length === 0) return alert("No responses yet!");
                 alert("Cycle Complete! Resetting selection history.");
                 pickedHistory.clear();
-                randomizeBubble(); // Recursively call to pick one immediately
+                randomizeBubble(); 
                 return;
             }
 
-            // 3. Pick Logic
             const winner = available[Math.floor(Math.random() * available.length)];
             pickedHistory.add(winner.id);
             winner.selected = true;
 
-            // 4. Animate to Center
+            // Visual overrides
             winner.el.classList.add('selected');
             winner.el.style.left = '50%';
             winner.el.style.top = '50%';
-            winner.el.style.transform = 'translate(-50%, -50%) scale(1.5)';
-            
-            // Note: We stop updating x/y in the physics loop when selected=true
         }
 
     </script>
