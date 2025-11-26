@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>First Five | Connected Classroom</title>
+    <title>First Five | Interactive Class Tool</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     
     <!-- Libraries -->
     <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
@@ -16,27 +16,33 @@
     <style>
         :root {
             --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.6);
             --text-main: #2d3436;
-            --accent: #6c5ce7; 
-            --accent-light: #a29bfe;
-            --thread-color: #b2bec3;
+            --text-light: #636e72;
+            --accent: #6c5ce7; /* Vivacious Purple/Blue */
+            --accent-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background: #f0f2f5; /* Fallback */
+            background: var(--bg-gradient);
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
             overflow: hidden;
-            width: 100vw; height: 100vh;
+            width: 100vw;
+            height: 100vh;
         }
 
-        /* --- VIVACIOUS BACKGROUND (Restored) --- */
+        /* --- VIVACIOUS BACKGROUND ANIMATION --- */
         .orb {
-            position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.6; z-index: -1;
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            z-index: -1;
             animation: floatOrb 20s infinite ease-in-out;
-            pointer-events: none;
         }
         .orb-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #ff9a9e; animation-delay: 0s; }
         .orb-2 { bottom: -20%; right: -10%; width: 60vw; height: 60vw; background: #a18cd1; animation-delay: -5s; }
@@ -47,7 +53,7 @@
             50% { transform: translate(30px, -50px); }
         }
 
-        /* --- LAYOUT --- */
+        /* --- UI LAYOUTS --- */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -56,117 +62,171 @@
         }
         .screen.active { opacity: 1; pointer-events: auto; }
 
-        h1 { font-family: 'DM Serif Display', serif; font-size: 3.5rem; margin-bottom: 1rem; }
+        h1 { font-family: 'DM Serif Display', serif; font-size: 4rem; color: var(--text-main); margin-bottom: 1rem; }
+        h2 { font-size: 1.2rem; font-weight: 300; color: var(--text-light); margin-bottom: 2rem; }
         
         .card {
-            background: rgba(255, 255, 255, 0.65);
+            background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(20px);
-            padding: 3rem; border-radius: 24px;
-            border: 1px solid rgba(255,255,255,0.8);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 3rem;
+            border-radius: 24px;
+            border: 1px solid white;
             box-shadow: 0 20px 40px rgba(0,0,0,0.05);
             display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
-            max-width: 500px; width: 90%;
-            text-align: center;
+            transition: all 0.5s ease;
         }
 
         input, textarea {
-            background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 12px; padding: 12px; font-size: 1rem; width: 100%;
-            font-family: inherit; outline: none; transition: 0.3s;
+            background: rgba(255,255,255,0.5);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 1.1rem;
+            width: 300px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s;
         }
-        input:focus, textarea:focus { background: white; border-color: var(--accent); }
-        textarea { height: 120px; resize: none; }
+        input:focus, textarea:focus { background: white; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
+        
+        textarea { width: 100%; min-width: 400px; height: 150px; resize: none; }
 
         button {
-            background: var(--text-main); color: white; border: none;
-            padding: 12px 30px; border-radius: 50px; font-size: 1rem; font-weight: 600;
-            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+            background: var(--text-main); color: white;
+            border: none; padding: 15px 35px; border-radius: 50px;
+            font-size: 1rem; font-weight: 600; cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
         button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        button.secondary { background: white; color: var(--text-main); border: 1px solid #ddd; }
-        button.small { padding: 6px 12px; font-size: 0.8rem; }
+        button.secondary { background: white; color: var(--text-main); border: 1px solid rgba(0,0,0,0.1); }
 
-        /* --- BUBBLE UNIVERSE --- */
-        #universe-layer {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 20; pointer-events: none;
+        /* --- TEACHER DASHBOARD LAYOUT --- */
+        #screen-teacher {
+            display: grid;
+            grid-template-rows: auto auto 1fr auto; /* Modified for prompt row */
+            align-items: start;
+            padding: 20px;
+        }
+
+        .dashboard-top {
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; max-width: 1400px; margin: 0 auto;
+            background: rgba(255,255,255,0.6); backdrop-filter: blur(15px);
+            padding: 15px 30px; border-radius: 20px; border: 1px solid white;
+            z-index: 50;
+        }
+
+        .prompt-display-container {
+            width: 100%; max-width: 1200px; margin: 20px auto 0;
+            text-align: center;
+            z-index: 45;
+            padding: 0 20px;
+            min-height: 60px; /* Prevent collapse */
         }
         
-        #thread-canvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 15; pointer-events: none;
+        .control-group { display: flex; flex-direction: column; gap: 8px; }
+        .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); font-weight: 600; }
+        .big-code { font-size: 2.5rem; font-family: 'DM Serif Display', serif; color: var(--accent); line-height: 1; }
+        
+        .prompt-text { 
+            font-size: 2rem; 
+            font-family: 'DM Serif Display', serif; 
+            line-height: 1.2; 
+            color: var(--text-main);
+            white-space: pre-wrap; /* Keeps line breaks */
+            word-wrap: break-word;
+            text-shadow: 0 2px 10px rgba(255,255,255,0.5);
         }
 
+        /* Student List Sidebar */
+        .student-sidebar {
+            position: absolute; top: 140px; right: 20px; bottom: 100px; width: 220px;
+            background: rgba(255,255,255,0.4); backdrop-filter: blur(10px);
+            border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.5);
+            overflow-y: auto; z-index: 40;
+        }
+        .student-item { font-size: 0.9rem; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .student-item:last-child { border: none; }
+
+        /* --- BUBBLE CANVAS --- */
+        #bubble-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; overflow: hidden; pointer-events: none;
+            opacity: 0; transition: opacity 1.5s ease; /* Hidden by default for students */
+        }
+        
+        /* Teacher always sees it, Students see it after submit */
+        body.teacher-mode #bubble-layer, 
+        body.student-submitted #bubble-layer {
+            opacity: 1;
+        }
+        
         .bubble {
             position: absolute;
-            width: fit-content; max-width: 280px; min-width: 120px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.5), 0 10px 20px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center;
             padding: 20px;
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.05);
-            text-align: left;
-            pointer-events: auto;
-            transform-origin: center;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s;
             will-change: transform, left, top;
-            display: flex; flex-direction: column; gap: 8px;
-            transition: background 0.3s, border 0.3s;
+            color: var(--text-main);
+            pointer-events: auto; /* Allow clicking bubbles */
         }
 
-        .bubble-text { font-size: 0.95rem; line-height: 1.4; color: #2d3436; word-wrap: break-word; }
-        .bubble-meta { 
-            display: flex; justify-content: space-between; align-items: center; 
-            font-size: 0.75rem; color: #636e72; border-top: 1px solid rgba(0,0,0,0.05); 
-            padding-top: 8px; margin-top: 4px;
+        .bubble-text { 
+            font-size: 1rem; line-height: 1.3; font-weight: 500;
+            pointer-events: none;
+            max-height: 80%; overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .bubble-author { font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent); }
         
-        .bubble-actions { display: flex; gap: 10px; }
-        .action-btn { 
-            cursor: pointer; display: flex; align-items: center; gap: 4px; 
-            transition: color 0.2s; background: none; border: none; padding: 0; color: #b2bec3; font-size: 0.8rem;
-        }
-        .action-btn:hover { color: var(--accent); }
-        .action-btn.liked { color: #e17055; }
-
-        .bubble.reply {
-            background: rgba(240, 240, 255, 0.65);
-            border-color: var(--accent-light);
-            font-size: 0.9rem; max-width: 220px;
+        .bubble-author {
+            margin-top: 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--accent);
         }
 
-        .bubble.highlight { border: 2px solid var(--accent); background: white; z-index: 100; transform: scale(1.1); }
-        .bubble.winner { 
-            border: 3px solid var(--accent); background: white; 
-            box-shadow: 0 0 60px rgba(108, 92, 231, 0.4);
+        /* Selected State (Big & Center) */
+        .bubble.selected {
+            z-index: 100 !important;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 30px 60px rgba(108, 92, 231, 0.3);
+            border: 2px solid var(--accent);
+        }
+
+        /* --- TOAST NOTIFICATION --- */
+        #toast {
+            position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%);
+            background: rgba(45, 52, 54, 0.9); color: white; 
+            padding: 12px 30px; border-radius: 50px;
+            font-size: 0.9rem; font-weight: 600; letter-spacing: 0.5px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s;
             z-index: 200;
         }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(-10px); }
 
-        /* --- UI OVERLAYS (HUD) --- */
-        .hud-bar {
-            position: fixed; z-index: 50; padding: 15px 25px;
-            background: rgba(255,255,255,0.85); backdrop-filter: blur(15px);
-            border-radius: 16px; border: 1px solid white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            display: flex; gap: 20px; align-items: center;
+        /* --- BOTTOM BAR --- */
+        .dashboard-bottom {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            z-index: 100;
         }
         
-        /* Teacher Top Bar */
-        #teacher-hud { top: 20px; left: 50%; transform: translateX(-50%); }
-        
-        /* Student Top Bar */
-        #student-hud { top: 20px; left: 50%; transform: translateX(-50%); width: 80%; max-width: 800px; justify-content: center; text-align: center; }
-
-        .divider { width: 1px; height: 30px; background: #ddd; }
-        
-        .prompt-display-text { font-family: 'DM Serif Display', serif; font-size: 1.2rem; max-width: 400px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-
-        /* Reply Modal */
-        #reply-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.2); backdrop-filter: blur(5px);
-            z-index: 1000; display: none; align-items: center; justify-content: center;
+        /* Post-Submit Student View */
+        .card.minimized {
+            padding: 1.5rem;
+            width: auto;
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.85);
         }
 
     </style>
@@ -178,20 +238,20 @@
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
 
-    <!-- Thread Drawing Layer -->
-    <canvas id="thread-canvas"></canvas>
+    <!-- The Shared Physics Container (Initially Hidden via CSS) -->
+    <div id="bubble-layer"></div>
     
-    <!-- Bubbles Container -->
-    <div id="universe-layer"></div>
+    <!-- Toast Notification -->
+    <div id="toast">Notification Message</div>
 
     <!-- 1. LANDING -->
     <div id="screen-landing" class="screen active">
         <div class="card">
-            <h1>First Five</h1>
-            <p>Interactive Literature Response Tool</p>
-            <div style="display: flex; gap: 15px; margin-top: 20px;">
-                <button onclick="initTeacher()">Host Class</button>
-                <button class="secondary" onclick="router('student-login')">Join Class</button>
+            <h1>First Five.</h1>
+            <h2>A warm-up tool for English Literature.</h2>
+            <div style="display: flex; gap: 15px;">
+                <button onclick="initTeacher()">Teacher (Host)</button>
+                <button class="secondary" onclick="showStudentLogin()">Student (Join)</button>
             </div>
         </div>
     </div>
@@ -199,519 +259,409 @@
     <!-- 2. STUDENT LOGIN -->
     <div id="screen-student-login" class="screen">
         <div class="card">
-            <h2>Join Room</h2>
-            <input type="text" id="join-code" placeholder="4-Digit Code" maxlength="4" style="text-align: center; font-size: 1.5rem; letter-spacing: 4px;">
+            <h1>Enter Room</h1>
+            <input type="text" id="join-code" placeholder="4-Digit Code" maxlength="4" style="text-align: center; letter-spacing: 5px; font-weight: bold;">
             <input type="text" id="student-name" placeholder="Your Name">
-            <button onclick="joinSession()">Enter</button>
+            <button onclick="joinSession()">Join Activity</button>
             <button class="secondary" onclick="router('landing')">Back</button>
         </div>
     </div>
 
-    <!-- 3. STUDENT WRITING DESK (Initial) -->
-    <div id="screen-writing" class="screen">
-        <div class="card">
-            <h3 style="color: var(--accent); text-transform: uppercase; font-size: 0.8rem;">Current Prompt</h3>
-            <h2 id="student-prompt-view" style="font-family: 'DM Serif Display'; font-size: 1.5rem;">Waiting for teacher...</h2>
-            <textarea id="student-response" placeholder="Write your response..."></textarea>
-            <button onclick="submitResponse()">Publish to Class</button>
+    <!-- 3. TEACHER DASHBOARD -->
+    <div id="screen-teacher" class="screen">
+        <div class="dashboard-top">
+            <div class="control-group">
+                <span class="label">Room Code</span>
+                <span class="big-code" id="display-code">...</span>
+            </div>
+            
+            <div class="control-group" style="flex-grow: 1; margin: 0 40px;">
+                <span class="label">Controls</span>
+                <!-- Input Mode -->
+                <div id="prompt-input-area" style="display: flex; gap: 10px;">
+                    <input type="text" id="teacher-prompt-input" placeholder="Type a prompt for the class..." style="width: 100%;">
+                    <button onclick="setPrompt()" style="padding: 10px 20px;">Set Prompt</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <span class="label">Timer</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span id="timer-display" style="font-family: 'DM Serif Display'; font-size: 2rem;">05:00</span>
+                    <button onclick="startTimer()" style="padding: 5px 15px; font-size: 0.8rem;">▶</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Full Width Prompt Display -->
+        <div class="prompt-display-container">
+            <div id="prompt-display-area" class="prompt-text"></div>
+        </div>
+
+        <div class="student-sidebar">
+            <div class="label" style="margin-bottom: 10px;">In the Inkwell (<span id="student-count">0</span>)</div>
+            <div id="student-list-container">
+                <!-- List items go here -->
+            </div>
+        </div>
+
+        <div class="dashboard-bottom">
+            <button onclick="randomizeBubble()" style="background: var(--accent); font-size: 1.2rem; padding: 20px 50px; box-shadow: 0 10px 30px rgba(108, 92, 231, 0.4);">
+                ✦ Pick a Voice
+            </button>
         </div>
     </div>
 
-    <!-- 4. SHARED UNIVERSE VIEW (Teacher & Student) -->
-    <div id="screen-universe" class="screen">
-        
-        <!-- TEACHER HUD -->
-        <div id="teacher-hud" class="hud-bar" style="display: none;">
-            <div>
-                <span style="font-size: 0.7rem; color: #888; text-transform: uppercase;">Code</span>
-                <strong id="display-code" style="font-size: 1.2rem; color: var(--accent); margin-left: 5px;">----</strong>
-            </div>
+    <!-- 4. STUDENT WRITING -->
+    <div id="screen-student-desk" class="screen">
+        <div id="student-card" class="card" style="max-width: 600px; width: 90%;">
+            <span class="label" style="color: var(--accent);">The Prompt</span>
+            <h2 id="student-prompt-view" style="color: var(--text-main); font-family: 'DM Serif Display'; font-size: 1.8rem; margin: 10px 0 30px;">Waiting for teacher...</h2>
             
-            <div class="divider"></div>
-
-            <!-- Prompt Controls -->
-            <div id="t-prompt-input-group" style="display: flex; gap: 5px;">
-                <input type="text" id="teacher-input" placeholder="Set Prompt..." style="width: 200px;">
-                <button class="secondary small" onclick="setPrompt()">Set</button>
-            </div>
-            <div id="t-prompt-display-group" style="display: none; align-items: center; gap: 10px;">
-                <span id="t-prompt-text" class="prompt-display-text">...</span>
-                <button class="secondary small" onclick="editPrompt()">✎</button>
-            </div>
-
-            <div class="divider"></div>
-
-            <!-- Timer Controls -->
-            <div style="display: flex; align-items: center; gap: 5px;">
-                <input type="number" id="timer-input" value="5" min="1" max="60" style="width: 50px; padding: 5px;">
-                <button class="small" onclick="startTimer()">▶</button>
-                <span id="timer-display" style="font-family: 'DM Serif Display'; font-size: 1.2rem; min-width: 50px;">05:00</span>
-            </div>
-
-            <div class="divider"></div>
+            <textarea id="student-response" placeholder="Write your first five lines..."></textarea>
             
-            <button class="small" style="background: var(--accent);" onclick="startRoulette()">✦ Pick</button>
-        </div>
-
-        <!-- STUDENT HUD (Prompt Display) -->
-        <div id="student-hud" class="hud-bar" style="display: none;">
-            <div style="display: flex; flex-direction: column; align-items: center;">
-                <span style="font-size: 0.7rem; color: var(--accent); text-transform: uppercase;">The Prompt</span>
-                <span id="s-universe-prompt" style="font-family: 'DM Serif Display'; font-size: 1.2rem; line-height: 1.2;">Waiting for prompt...</span>
+            <div id="submit-section" style="margin-top: 20px; width: 100%;">
+                <button onclick="submitResponse()" style="width: 100%;">Submit Response</button>
             </div>
-        </div>
-
-    </div>
-
-    <!-- Reply Modal -->
-    <div id="reply-modal">
-        <div class="card">
-            <h3>Reply to <span id="reply-target-name">...</span></h3>
-            <textarea id="reply-input" placeholder="Your thoughts..."></textarea>
-            <div style="display: flex; gap: 10px; width: 100%;">
-                <button onclick="sendReply()" style="flex: 1;">Post Reply</button>
-                <button class="secondary" onclick="closeReplyModal()" style="flex: 1;">Cancel</button>
+            <div id="submitted-msg" style="display: none; text-align: center; color: var(--accent); margin-top: 20px; font-weight: bold;">
+                Response Submitted.<br>Watch the inkwell fill up...
             </div>
         </div>
     </div>
 
     <script>
-        // --- CONFIG & STATE ---
-        const APP_ID = 'inkwell-v5-final-';
-        let myPeer, myId;
-        let role = 'student'; 
+        // --- APP STATE ---
+        const APP_ID = 'inkwell-v2-';
+        let myPeer = null;
         let connections = []; // Teacher: list of student conns
         let hostConn = null;  // Student: conn to teacher
+        let students = [];    // Teacher: list of {id, name}
+        let isTeacher = false;
         
-        // Data Store (Synced)
-        let bubbles = []; 
-        let currentPrompt = "";
-        
-        // Physics Engine
-        let physicsLoopId;
-        const canvas = document.getElementById('thread-canvas');
-        const ctx = canvas.getContext('2d');
-        let width, height;
-
-        // Interaction State
-        let activeReplyParentId = null;
+        // Physics State
+        let bubbles = []; // { id, x, y, vx, vy, radius, text, author, el, selected }
+        let pickedHistory = new Set();
+        let animationFrameId;
 
         // --- ROUTING ---
         function router(screen) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(`screen-${screen}`).classList.add('active');
         }
-
-        // --- RESIZE HANDLER ---
-        function resize() {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-        }
-        window.addEventListener('resize', resize);
-        resize();
+        function showStudentLogin() { router('student-login'); }
 
         // --- TEACHER LOGIC ---
         function initTeacher() {
-            role = 'teacher';
+            isTeacher = true;
+            document.body.classList.add('teacher-mode');
             const code = Math.floor(1000 + Math.random() * 9000).toString();
             myPeer = new Peer(APP_ID + code);
 
-            myPeer.on('open', (id) => {
-                myId = id;
+            myPeer.on('open', () => {
                 document.getElementById('display-code').innerText = code;
-                document.getElementById('teacher-hud').style.display = 'flex';
-                router('universe');
-                startPhysicsLoop(); // Teacher runs physics
+                router('teacher');
+                startPhysicsLoop();
             });
 
             myPeer.on('connection', (conn) => {
                 connections.push(conn);
-                conn.on('data', (data) => handleServerData(data, conn));
-                
-                // Sync new student
-                setTimeout(() => {
-                    conn.send({ type: 'SYNC_FULL', bubbles: bubbles, prompt: currentPrompt });
-                }, 500);
+                conn.on('data', (data) => handleTeacherData(data, conn));
+                conn.on('close', () => removeStudent(conn.peer));
             });
         }
 
-        function handleServerData(data, conn) {
+        function handleTeacherData(data, conn) {
+            if(data.type === 'JOIN') {
+                students.push({ id: conn.peer, name: data.name });
+                updateStudentList();
+                // Send current state to new student
+                conn.send({ 
+                    type: 'SYNC', 
+                    prompt: document.getElementById('prompt-display-area').innerText,
+                    bubbles: bubbles.map(b => ({ author: b.author, text: b.text, id: b.id }))
+                });
+            }
             if(data.type === 'SUBMIT') {
-                createBubble(data.text, data.author, null); 
-            }
-            if(data.type === 'REPLY') {
-                createBubble(data.text, data.author, data.parentId);
-            }
-            if(data.type === 'LIKE') {
-                const b = bubbles.find(b => b.id === data.id);
-                if(b) {
-                    b.likes++;
-                    broadcastState();
-                }
+                spawnBubble(data.name, data.text, conn.peer);
+                // Broadcast new bubble to ALL students so they can see it too
+                broadcastToAll({
+                    type: 'BUBBLE',
+                    author: data.name,
+                    text: data.text,
+                    id: conn.peer
+                });
             }
         }
 
-        // Prompt Logic
-        function setPrompt() {
-            const txt = document.getElementById('teacher-input').value;
-            if(!txt) return;
-            currentPrompt = txt;
-            
-            // UI Toggle
-            document.getElementById('t-prompt-input-group').style.display = 'none';
-            document.getElementById('t-prompt-display-group').style.display = 'flex';
-            document.getElementById('t-prompt-text').innerText = txt;
-
-            broadcast({ type: 'PROMPT', text: currentPrompt });
-        }
-
-        function editPrompt() {
-            document.getElementById('t-prompt-display-group').style.display = 'none';
-            document.getElementById('t-prompt-input-group').style.display = 'flex';
-        }
-
-        // Timer Logic
-        let timerInterval;
-        function startTimer() {
-            const input = document.getElementById('timer-input');
-            let time = parseInt(input.value) * 60;
-            
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                time--;
-                let m = Math.floor(time / 60);
-                let s = time % 60;
-                document.getElementById('timer-display').innerText = 
-                    `${m}:${s < 10 ? '0' : ''}${s}`;
-                
-                if(time <= 0) {
-                    clearInterval(timerInterval);
-                    document.getElementById('timer-display').style.color = 'red';
-                }
-            }, 1000);
-        }
-
-        function broadcastState() {
-            // Teacher sends physics update
-            const payload = bubbles.map(b => ({
-                id: b.id, x: b.x, y: b.y, 
-                text: b.text, author: b.author, 
-                likes: b.likes, parentId: b.parentId,
-                isWinner: b.isWinner
-            }));
-            broadcast({ type: 'SYNC_TICK', bubbles: payload });
-        }
-
-        function broadcast(msg) {
+        function broadcastToAll(msg) {
             connections.forEach(c => c.send(msg));
+        }
+
+        function updateStudentList() {
+            const list = document.getElementById('student-list-container');
+            document.getElementById('student-count').innerText = students.length;
+            list.innerHTML = students.map(s => `<div class="student-item">${s.name}</div>`).join('');
+        }
+
+        function removeStudent(peerId) {
+            students = students.filter(s => s.id !== peerId);
+            updateStudentList();
+        }
+
+        function setPrompt() {
+            const txt = document.getElementById('teacher-prompt-input').value;
+            if(!txt) return;
+
+            // Update UI
+            document.getElementById('prompt-input-area').style.display = 'none';
+            const display = document.getElementById('prompt-display-area');
+            display.innerText = txt;
+
+            // Broadcast
+            broadcastToAll({ type: 'PROMPT', text: txt });
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        let timerInt;
+        function startTimer() {
+            let sec = 300;
+            clearInterval(timerInt);
+            timerInt = setInterval(() => {
+                sec--;
+                let m = Math.floor(sec/60);
+                let s = sec%60;
+                document.getElementById('timer-display').innerText = 
+                    `${m}:${s<10?'0':''}${s}`;
+                if(sec<=0) clearInterval(timerInt);
+            }, 1000);
         }
 
         // --- STUDENT LOGIC ---
         function joinSession() {
             const code = document.getElementById('join-code').value;
             const name = document.getElementById('student-name').value;
-            if(!code || !name) return alert("Missing Code/Name");
-            
-            window.studentName = name;
+            if(!code || !name) return alert("Missing info");
 
             myPeer = new Peer();
             myPeer.on('open', () => {
                 hostConn = myPeer.connect(APP_ID + code);
-                hostConn.on('open', () => {
-                    router('writing');
-                });
-                hostConn.on('data', handleClientData);
-            });
-        }
-
-        function handleClientData(data) {
-            if(data.type === 'PROMPT') {
-                currentPrompt = data.text;
-                // Update Writing View
-                document.getElementById('student-prompt-view').innerText = currentPrompt;
-                // Update Universe View (Top Bar)
-                document.getElementById('s-universe-prompt').innerText = currentPrompt;
-            }
-            if(data.type === 'SYNC_FULL') {
-                currentPrompt = data.prompt;
-                document.getElementById('student-prompt-view').innerText = currentPrompt;
-                document.getElementById('s-universe-prompt').innerText = currentPrompt;
                 
-                data.bubbles.forEach(remoteB => {
-                   if(!bubbles.find(b => b.id === remoteB.id)) {
-                       spawnLocalBubble(remoteB);
-                   } 
+                hostConn.on('open', () => {
+                    hostConn.send({ type: 'JOIN', name: name });
+                    router('student-desk');
+                    startPhysicsLoop(); // Start physics engine (though invisible initially)
                 });
-            }
-            if(data.type === 'SYNC_TICK') {
-                data.bubbles.forEach(remoteB => {
-                    let localB = bubbles.find(b => b.id === remoteB.id);
-                    if(!localB) {
-                        spawnLocalBubble(remoteB);
-                    } else {
-                        localB.targetX = remoteB.x;
-                        localB.targetY = remoteB.y;
-                        localB.likes = remoteB.likes;
-                        localB.isWinner = remoteB.isWinner;
-                        updateBubbleDOM(localB);
+
+                hostConn.on('data', (data) => {
+                    if(data.type === 'PROMPT') {
+                        document.getElementById('student-prompt-view').innerText = data.text;
+                    }
+                    if(data.type === 'BUBBLE') {
+                        spawnBubble(data.author, data.text, data.id);
+                    }
+                    if(data.type === 'SYNC') {
+                        if(data.prompt) document.getElementById('student-prompt-view').innerText = data.prompt;
+                        if(data.bubbles) {
+                            data.bubbles.forEach(b => spawnBubble(b.author, b.text, b.id));
+                        }
+                    }
+                    if(data.type === 'SELECT') {
+                        highlightBubble(data.id);
                     }
                 });
-            }
+
+                hostConn.on('error', () => alert("Connection failed"));
+            });
         }
 
         function submitResponse() {
             const txt = document.getElementById('student-response').value;
+            const name = document.getElementById('student-name').value;
             if(!txt) return;
-            hostConn.send({ type: 'SUBMIT', text: txt, author: window.studentName });
+
+            hostConn.send({ type: 'SUBMIT', text: txt, name: name });
             
-            // Switch to Universe View Immediately
-            router('universe');
-            document.getElementById('student-hud').style.display = 'flex';
+            // UI Transition: Minimize card, show bubbles
+            document.getElementById('student-response').style.display = 'none';
+            document.getElementById('submit-section').style.display = 'none';
+            document.getElementById('submitted-msg').style.display = 'block';
             
-            // Ensure prompt is synced to top bar
-            document.getElementById('s-universe-prompt').innerText = currentPrompt || "Joined Class";
-            
-            startClientPhysics(); 
+            document.getElementById('student-card').classList.add('minimized');
+            document.body.classList.add('student-submitted'); // Reveals the #bubble-layer
         }
 
-        // --- SHARED PHYSICS ---
+        // --- BUBBLE PHYSICS ENGINE ---
+        
+        function spawnBubble(author, text, id) {
+            // Check duplicates to prevent re-spawning on sync
+            if(bubbles.some(b => b.text === text && b.author === author)) return;
 
-        function createBubble(text, author, parentId) {
-            const id = Date.now() + Math.random().toString();
-            let startX, startY;
-            
-            if (parentId) {
-                const parent = bubbles.find(b => b.id === parentId);
-                startX = parent ? parent.x + (Math.random()-0.5)*50 : width/2;
-                startY = parent ? parent.y + 50 : height/2;
-            } else {
-                const angle = Math.random() * Math.PI * 2;
-                const dist = Math.min(width, height) / 2 + 100;
-                startX = width/2 + Math.cos(angle) * dist;
-                startY = height/2 + Math.sin(angle) * dist;
-            }
-
-            const newBubble = {
-                id, text, author, parentId,
-                x: startX, y: startY,
-                vx: 0, vy: 0,
-                radius: 60,
-                likes: 0,
-                isWinner: false
-            };
-            
-            bubbles.push(newBubble);
-            spawnBubbleDOM(newBubble);
-            broadcastState();
-        }
-
-        function spawnLocalBubble(data) {
-            const b = { ...data, vx:0, vy:0, targetX: data.x, targetY: data.y };
-            bubbles.push(b);
-            spawnBubbleDOM(b);
-        }
-
-        function spawnBubbleDOM(b) {
+            const container = document.getElementById('bubble-layer');
             const el = document.createElement('div');
-            el.className = b.parentId ? 'bubble reply' : 'bubble';
-            el.id = 'dom-' + b.id;
+            el.className = 'bubble';
+            el.innerHTML = `<div class="bubble-text">"${text}"</div><div class="bubble-author">${author}</div>`;
             
-            const content = `
-                <div class="bubble-text">${b.text}</div>
-                <div class="bubble-meta">
-                    <span class="bubble-author">${b.author}</span>
-                    <div class="bubble-actions">
-                        <button class="action-btn" onclick="sendLike('${b.id}')">
-                            ♥ <span id="likes-${b.id}">${b.likes}</span>
-                        </button>
-                        <button class="action-btn" onclick="openReply('${b.id}', '${b.author}')">
-                            ↰ Reply
-                        </button>
-                    </div>
-                </div>
-            `;
-            el.innerHTML = content;
-            document.getElementById('universe-layer').appendChild(el);
-            
-            const rect = el.getBoundingClientRect();
-            b.radius = Math.max(rect.width, rect.height) / 2 + 10;
-        }
+            // Random Size between 120 and 180
+            const size = 140 + Math.random() * 60; 
+            el.style.width = size + 'px';
+            el.style.height = size + 'px';
 
-        function updateBubbleDOM(b) {
-            const el = document.getElementById('dom-' + b.id);
-            if(!el) return;
-            
-            if(role === 'student') {
-                b.x += (b.targetX - b.x) * 0.1;
-                b.y += (b.targetY - b.y) * 0.1;
+            // Only teacher can click to randomize, but students can see interactions
+            if(isTeacher) {
+                // Teacher click logic if needed, currently handled by Randomizer button
             }
 
-            el.style.left = (b.x - b.radius + 10) + 'px';
-            el.style.top = (b.y - b.radius + 10) + 'px';
-            document.getElementById(`likes-${b.id}`).innerText = b.likes;
+            container.appendChild(el);
 
-            if(b.isWinner) el.classList.add('winner');
-            else el.classList.remove('winner');
+            // Spawn at CENTER screen (popping up)
+            const b = {
+                id: id + '_' + Math.random().toString(36).substr(2, 5), // Unique internal ID
+                el: el,
+                x: window.innerWidth / 2,
+                y: window.innerHeight / 2,
+                vx: (Math.random() - 0.5) * 8, // Fast initial velocity
+                vy: (Math.random() - 0.5) * 8,
+                radius: size / 2 + 10, // Buffer
+                mass: size,
+                selected: false,
+                author: author,
+                text: text
+            };
+            bubbles.push(b);
         }
 
-        // --- PHYSICS LOOPS ---
         function startPhysicsLoop() {
+            if(animationFrameId) cancelAnimationFrame(animationFrameId);
+            
             function loop() {
                 updatePhysics();
-                drawThreads();
-                broadcastState();
-                requestAnimationFrame(loop);
-            }
-            loop();
-        }
-
-        function startClientPhysics() {
-            function loop() {
-                bubbles.forEach(b => updateBubbleDOM(b));
-                drawThreads();
-                requestAnimationFrame(loop);
+                animationFrameId = requestAnimationFrame(loop);
             }
             loop();
         }
 
         function updatePhysics() {
-            const centerX = width / 2;
-            const centerY = height / 2;
+            const width = window.innerWidth;
+            const height = window.innerHeight;
 
-            bubbles.forEach((b, i) => {
-                if(b.isWinner) return; 
+            for (let i = 0; i < bubbles.length; i++) {
+                let b = bubbles[i];
+                if (b.selected) continue; // Don't move the selected one with physics
 
-                let fx = 0, fy = 0;
-
-                // Center Gravity
-                fx += (centerX - b.x) * 0.0005;
-                fy += (centerY - b.y) * 0.0005;
-
-                // Repulsion
-                bubbles.forEach((other, j) => {
-                    if (i === j) return;
-                    const dx = b.x - other.x;
-                    const dy = b.y - other.y;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    const minDist = b.radius + other.radius + 10; 
-
-                    if (dist < minDist && dist > 0) {
-                        const force = (minDist - dist) * 0.05; 
-                        fx += (dx / dist) * force;
-                        fy += (dy / dist) * force;
-                    }
-                });
-
-                // Spring Force (Replies)
-                if (b.parentId) {
-                    const parent = bubbles.find(p => p.id === b.parentId);
-                    if (parent) {
-                        const dx = parent.x - b.x;
-                        const dy = parent.y - b.y;
-                        const dist = Math.sqrt(dx*dx + dy*dy);
-                        const targetDist = parent.radius + b.radius + 20;
-                        if (dist > targetDist) {
-                            fx += dx * 0.002;
-                            fy += dy * 0.002;
-                        }
-                    }
-                }
-
-                b.vx = (b.vx + fx) * 0.9; 
-                b.vy = (b.vy + fy) * 0.9;
+                // 1. Move
                 b.x += b.vx;
                 b.y += b.vy;
 
-                if(b.x < 0) b.x = 0; if(b.x > width) b.x = width;
-                if(b.y < 0) b.y = 0; if(b.y > height) b.y = height;
+                // 2. Wall Bounce (Dampened)
+                if (b.x - b.radius < 0) { b.x = b.radius; b.vx *= -0.8; }
+                if (b.x + b.radius > width) { b.x = width - b.radius; b.vx *= -0.8; }
+                if (b.y - b.radius < 0) { b.y = b.radius; b.vy *= -0.8; }
+                if (b.y + b.radius > height) { b.y = height - b.radius; b.vy *= -0.8; }
 
-                updateBubbleDOM(b);
-            });
-        }
+                // 3. Friction (Slow down slightly)
+                b.vx *= 0.98;
+                b.vy *= 0.98;
 
-        function drawThreads() {
-            ctx.clearRect(0, 0, width, height);
-            ctx.strokeStyle = '#b2bec3';
-            ctx.lineWidth = 2;
+                // 4. Gentle Float (Ambient motion)
+                b.vx += (Math.random() - 0.5) * 0.05;
+                b.vy += (Math.random() - 0.5) * 0.05;
 
-            bubbles.forEach(b => {
-                if(b.parentId) {
-                    const parent = bubbles.find(p => p.id === b.parentId);
-                    if(parent) {
-                        ctx.beginPath();
-                        ctx.moveTo(b.x, b.y);
-                        ctx.lineTo(parent.x, parent.y);
-                        ctx.stroke();
+                // 5. Collision & Squeezing (Repulsion)
+                for (let j = i + 1; j < bubbles.length; j++) {
+                    let b2 = bubbles[j];
+                    if (b2.selected) continue;
+
+                    let dx = b2.x - b.x;
+                    let dy = b2.y - b.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    let minDist = b.radius + b2.radius;
+
+                    if (dist < minDist) {
+                        // Overlap detected - Push apart
+                        let angle = Math.atan2(dy, dx);
+                        let tx = Math.cos(angle);
+                        let ty = Math.sin(angle);
+                        
+                        // Spring force (the "Squeeze")
+                        let force = (minDist - dist) * 0.05; 
+
+                        b.vx -= tx * force;
+                        b.vy -= ty * force;
+                        b2.vx += tx * force;
+                        b2.vy += ty * force;
                     }
                 }
-            });
-        }
 
-        // --- INTERACTIONS ---
-        function sendLike(id) {
-            const b = bubbles.find(x => x.id === id);
-            if(b) b.likes++; 
-            if(role === 'student') hostConn.send({ type: 'LIKE', id });
-            else broadcastState();
-        }
-
-        function openReply(id, name) {
-            activeReplyParentId = id;
-            document.getElementById('reply-target-name').innerText = name;
-            document.getElementById('reply-modal').style.display = 'flex';
-        }
-
-        function closeReplyModal() {
-            document.getElementById('reply-modal').style.display = 'none';
-            document.getElementById('reply-input').value = '';
-        }
-
-        function sendReply() {
-            const txt = document.getElementById('reply-input').value;
-            if(!txt) return;
-
-            if(role === 'student') {
-                hostConn.send({ type: 'REPLY', text: txt, author: window.studentName, parentId: activeReplyParentId });
-            } else {
-                createBubble(txt, "Teacher", activeReplyParentId);
-            }
-            closeReplyModal();
-        }
-
-        function startRoulette() {
-            const candidates = bubbles.filter(b => !b.isWinner);
-            if(candidates.length === 0) return alert("No bubbles left!");
-
-            let cycles = 0;
-            const maxCycles = 20;
-            let speed = 100;
-            
-            bubbles.forEach(b => { 
-                b.isWinner = false; 
-                document.getElementById('dom-'+b.id)?.classList.remove('winner');
-            });
-
-            function step() {
-                document.querySelectorAll('.bubble').forEach(el => el.classList.remove('highlight'));
+                // Apply to DOM
+                b.el.style.left = (b.x - b.radius + 10) + 'px'; // +10 correction for padding diff
+                b.el.style.top = (b.y - b.radius + 10) + 'px';
                 
-                const rand = candidates[Math.floor(Math.random() * candidates.length)];
-                const el = document.getElementById('dom-'+rand.id);
-                if(el) el.classList.add('highlight');
-
-                cycles++;
-                if(cycles < maxCycles) {
-                    setTimeout(step, speed);
-                } else {
-                    rand.isWinner = true;
-                    broadcastState();
-                    rand.vx = (width/2 - rand.x) * 0.1;
-                    rand.vy = (height/2 - rand.y) * 0.1;
+                if(!b.selected) {
+                    b.el.style.transform = `scale(1)`;
+                    b.el.classList.remove('selected');
                 }
             }
-            step();
         }
+
+        // --- RANDOMIZER & SYNC ---
+        
+        function highlightBubble(bubbleInternalId) {
+            // Reset others
+            bubbles.forEach(b => {
+                b.selected = false;
+                b.el.classList.remove('selected');
+            });
+
+            // Find and select
+            const winner = bubbles.find(b => b.id === bubbleInternalId);
+            if(winner) {
+                winner.selected = true;
+                winner.el.classList.add('selected');
+                winner.el.style.left = '50%';
+                winner.el.style.top = '50%';
+                winner.el.style.transform = 'translate(-50%, -50%) scale(1.5)';
+            }
+        }
+
+        function randomizeBubble() {
+            // 1. Reset any currently selected bubble
+            const prev = bubbles.find(b => b.selected);
+            if (prev) {
+                prev.selected = false;
+                prev.vx = (Math.random() - 0.5) * 5;
+                prev.vy = (Math.random() - 0.5) * 5;
+            }
+
+            // 2. Filter available bubbles (Excluding history)
+            const available = bubbles.filter(b => !pickedHistory.has(b.id));
+
+            if (available.length === 0) {
+                if (bubbles.length === 0) return showToast("No responses in the inkwell yet!");
+                
+                // Cycle Complete logic
+                showToast("Cycle Complete! Starting fresh.");
+                pickedHistory.clear();
+                
+                // Slightly delay the restart so the toast can be seen
+                setTimeout(() => randomizeBubble(), 1000);
+                return;
+            }
+
+            // 3. Pick Logic
+            const winner = available[Math.floor(Math.random() * available.length)];
+            pickedHistory.add(winner.id);
+            
+            // 4. Sync Selection to Students
+            highlightBubble(winner.id);
+            broadcastToAll({ type: 'SELECT', id: winner.id });
+        }
+
     </script>
 </body>
 </html>
