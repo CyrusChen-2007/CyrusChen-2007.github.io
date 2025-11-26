@@ -1,448 +1,558 @@
+This is a complete redesign. I have replaced the dark, noisy aesthetic with a clean, vivacious "Glass & Light" theme. I also built a custom Physics Engine in JavaScript to handle the bubbles so they collide, squeeze, and float naturally like liquid glass.
+
+Key Features Added:
+
+Liquid Glass Physics: Bubbles are translucent, blur the background, and physically push each other away (collision detection).
+
+Smart Randomizer: Tracks history. It won't pick the same student twice until everyone has been picked.
+
+Dynamic Teacher View: Shows the active prompt and a real-time list of joined students.
+
+Pop-up Spawning: New answers burst from the center of the screen, pushing existing bubbles aside.
+
+How to Host
+
+Save as index.html and deploy to GitHub Pages.
+
+code
+Html
+play_circle
+download
+content_copy
+expand_less
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Inkwell | First Five Activity</title>
+    <title>First Five | Interactive Class Tool</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,400&family=Space+Mono:ital,wght@0,400;0,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     
     <!-- Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
 
     <style>
         :root {
-            --bg: #050505; /* Deep Ink Black */
-            --paper: #f0f0eb; /* Parchment */
-            --accent: #d04e4e; /* Grading Red */
-            --ink: #1a1a1a;
-            --gold: #c5a059;
+            --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --text-main: #2d3436;
+            --text-light: #636e72;
+            --accent: #6c5ce7; /* Vivacious Purple/Blue */
+            --accent-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background-color: var(--bg);
-            color: var(--paper);
-            font-family: 'Cormorant Garamond', serif;
-            overflow: hidden; /* Prevent scroll */
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
             width: 100vw;
             height: 100vh;
         }
 
-        /* --- IMMERSIVE BACKGROUND --- */
-        .noise {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: -1; opacity: 0.08;
-            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)"/%3E%3C/svg%3E');
+        /* --- VIVACIOUS BACKGROUND ANIMATION --- */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            z-index: -1;
+            animation: floatOrb 20s infinite ease-in-out;
         }
-        
-        #floating-letters {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -2; pointer-events: none;
-        }
-        
-        .floater {
-            position: absolute; font-family: 'Cormorant Garamond';
-            color: rgba(255,255,255,0.03); user-select: none;
-        }
+        .orb-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #ff9a9e; animation-delay: 0s; }
+        .orb-2 { bottom: -20%; right: -10%; width: 60vw; height: 60vw; background: #a18cd1; animation-delay: -5s; }
+        .orb-3 { top: 40%; left: 40%; width: 40vw; height: 40vw; background: #fad0c4; animation-delay: -10s; }
 
-        /* --- CURSOR --- */
-        .cursor {
-            position: fixed; top: 0; left: 0; width: 20px; height: 20px;
-            border: 1px solid var(--paper); border-radius: 50%;
-            pointer-events: none; z-index: 10000;
-            transform: translate(-50%, -50%); mix-blend-mode: difference;
-            transition: width 0.3s, height 0.3s, background 0.3s;
+        @keyframes floatOrb {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, -50px); }
         }
-        .cursor.hovered { background: var(--paper); width: 60px; height: 60px; border: none; }
 
         /* --- UI LAYOUTS --- */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.5s;
-            padding: 2rem;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
+            z-index: 10;
         }
         .screen.active { opacity: 1; pointer-events: auto; }
 
-        h1 { font-size: 4rem; margin-bottom: 2rem; font-weight: 300; text-align: center; }
-        h2 { font-family: 'Space Mono'; font-size: 1rem; color: var(--accent); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 2px; }
-
-        /* --- INPUTS & BUTTONS --- */
-        input, textarea {
-            background: transparent; border: none; border-bottom: 1px solid var(--paper);
-            color: var(--paper); font-family: 'Space Mono'; font-size: 1.5rem;
-            padding: 10px; margin-bottom: 2rem; width: 300px; text-align: center;
-            outline: none; transition: border 0.3s;
-        }
-        textarea {
-            width: 100%; max-width: 600px; height: 150px;
-            border: 1px solid rgba(255,255,255,0.2); text-align: left; resize: none;
-        }
-        input:focus, textarea:focus { border-color: var(--accent); }
-
-        .btn-group { display: flex; gap: 20px; }
+        h1 { font-family: 'DM Serif Display', serif; font-size: 4rem; color: var(--text-main); margin-bottom: 1rem; }
+        h2 { font-size: 1.2rem; font-weight: 300; color: var(--text-light); margin-bottom: 2rem; }
         
-        button {
-            background: transparent; border: 1px solid var(--paper);
-            color: var(--paper); padding: 15px 30px;
-            font-family: 'Space Mono'; text-transform: uppercase;
-            font-size: 0.9rem; letter-spacing: 1px;
+        .card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 3rem;
+            border-radius: 24px;
+            border: 1px solid white;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+        }
+
+        input, textarea {
+            background: rgba(255,255,255,0.5);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 1.1rem;
+            width: 300px;
+            font-family: inherit;
+            outline: none;
             transition: all 0.3s;
         }
-        button:hover { background: var(--paper); color: var(--bg); }
-        button.primary { border-color: var(--accent); color: var(--accent); }
-        button.primary:hover { background: var(--accent); color: white; }
-
-        /* --- TEACHER DASHBOARD --- */
-        #teacher-dashboard { justify-content: flex-start; padding-top: 60px; }
-        .dashboard-header {
-            display: flex; justify-content: space-between; width: 100%; max-width: 1200px;
-            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px;
-            align-items: center; z-index: 10;
-        }
-        .code-display { font-size: 2rem; font-family: 'Space Mono'; color: var(--gold); }
-        .timer-display { font-size: 2rem; font-family: 'Space Mono'; }
+        input:focus, textarea:focus { background: white; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
         
-        /* --- BUBBLES --- */
-        #bubble-container {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 5; overflow: hidden;
+        textarea { width: 100%; min-width: 400px; height: 150px; resize: none; }
+
+        button {
+            background: var(--text-main); color: white;
+            border: none; padding: 15px 35px; border-radius: 50px;
+            font-size: 1rem; font-weight: 600; cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
+        button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        button.secondary { background: white; color: var(--text-main); border: 1px solid rgba(0,0,0,0.1); }
+
+        /* --- TEACHER DASHBOARD LAYOUT --- */
+        #screen-teacher {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            align-items: start;
+            padding: 20px;
+        }
+
+        .dashboard-top {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            width: 100%; max-width: 1400px; margin: 0 auto;
+            background: rgba(255,255,255,0.6); backdrop-filter: blur(15px);
+            padding: 20px; border-radius: 20px; border: 1px solid white;
+            z-index: 50;
+        }
+
+        .control-group { display: flex; flex-direction: column; gap: 8px; }
+        .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); font-weight: 600; }
+        .big-code { font-size: 2.5rem; font-family: 'DM Serif Display', serif; color: var(--accent); line-height: 1; }
+        .prompt-text { font-size: 1.5rem; font-family: 'DM Serif Display', serif; max-width: 600px; line-height: 1.2; }
+
+        /* Student List Sidebar */
+        .student-sidebar {
+            position: absolute; top: 140px; right: 20px; bottom: 100px; width: 220px;
+            background: rgba(255,255,255,0.4); backdrop-filter: blur(10px);
+            border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.5);
+            overflow-y: auto; z-index: 40;
+        }
+        .student-item { font-size: 0.9rem; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .student-item:last-child { border: none; }
+
+        /* --- BUBBLE CANVAS --- */
+        #bubble-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 20; overflow: hidden; pointer-events: none; /* Let clicks pass through if needed, handled by JS */
+        }
+        
         .bubble {
             position: absolute;
-            max-width: 300px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.5), 0 10px 20px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center;
             padding: 20px;
-            background: rgba(20, 20, 20, 0.8);
-            border: 1px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(5px);
-            border-radius: 50% 50% 50% 0;
-            color: var(--paper);
-            font-size: 1.1rem;
-            line-height: 1.4;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transform-origin: center center;
-            opacity: 0;
-        }
-        .bubble .author {
-            display: block; margin-top: 10px; font-family: 'Space Mono';
-            font-size: 0.7rem; color: var(--accent); text-transform: uppercase;
-        }
-        .bubble.highlighted {
-            background: var(--paper); color: var(--bg);
-            border-color: var(--gold);
-            z-index: 100;
-            box-shadow: 0 0 50px rgba(197, 160, 89, 0.3);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s;
+            will-change: transform, left, top;
+            color: var(--text-main);
         }
 
-        /* --- STUDENT VIEW --- */
-        .prompt-display {
-            font-size: 2rem; font-style: italic; max-width: 800px; text-align: center;
-            margin-bottom: 40px; color: var(--gold);
+        .bubble-text { 
+            font-size: 1rem; line-height: 1.3; font-weight: 500;
+            pointer-events: none;
+            max-height: 80%; overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .waiting-text {
-            font-family: 'Space Mono'; color: #555; margin-top: 20px;
+        
+        .bubble-author {
+            margin-top: 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--accent);
+        }
+
+        /* Selected State (Big & Center) */
+        .bubble.selected {
+            z-index: 100 !important;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 30px 60px rgba(108, 92, 231, 0.3);
+            border: 2px solid var(--accent);
+        }
+
+        /* --- BOTTOM BAR --- */
+        .dashboard-bottom {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            z-index: 100;
         }
 
     </style>
 </head>
 <body>
 
-    <!-- VISUALS -->
-    <div class="cursor"></div>
-    <div class="noise"></div>
-    <div id="floating-letters"></div>
+    <!-- Background Decoration -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
 
-    <!-- 1. LANDING SCREEN -->
+    <!-- 1. LANDING -->
     <div id="screen-landing" class="screen active">
-        <h2>The Inkwell</h2>
-        <h1>Who enters the room?</h1>
-        <div class="btn-group">
-            <button class="hover-target" onclick="setupTeacher()">I am the Curator (Teacher)</button>
-            <button class="hover-target" onclick="showStudentLogin()">I am a Writer (Student)</button>
+        <div class="card">
+            <h1>First Five.</h1>
+            <h2>A warm-up tool for English Literature.</h2>
+            <div style="display: flex; gap: 15px;">
+                <button onclick="initTeacher()">Teacher (Host)</button>
+                <button class="secondary" onclick="showStudentLogin()">Student (Join)</button>
+            </div>
         </div>
     </div>
 
     <!-- 2. STUDENT LOGIN -->
     <div id="screen-student-login" class="screen">
-        <h2>Join the Session</h2>
-        <input type="text" id="join-code" placeholder="4-Digit Code" maxlength="4" class="hover-target">
-        <input type="text" id="student-name" placeholder="Your Name" class="hover-target">
-        <div class="btn-group">
-            <button onclick="router('landing')" class="hover-target">Back</button>
-            <button class="primary hover-target" onclick="joinSession()">Enter</button>
+        <div class="card">
+            <h1>Enter Room</h1>
+            <input type="text" id="join-code" placeholder="4-Digit Code" maxlength="4" style="text-align: center; letter-spacing: 5px; font-weight: bold;">
+            <input type="text" id="student-name" placeholder="Your Name">
+            <button onclick="joinSession()">Join Activity</button>
+            <button class="secondary" onclick="router('landing')">Back</button>
         </div>
     </div>
 
     <!-- 3. TEACHER DASHBOARD -->
     <div id="screen-teacher" class="screen">
-        <div class="dashboard-header">
-            <div>
-                <div style="font-family:'Space Mono'; font-size: 0.8rem;">Session Code</div>
-                <div class="code-display" id="display-code">----</div>
+        <div class="dashboard-top">
+            <div class="control-group">
+                <span class="label">Room Code</span>
+                <span class="big-code" id="display-code">...</span>
             </div>
-            <div>
-                <input type="text" id="teacher-prompt" placeholder="Set the prompt here..." style="width: 400px; text-align: left; font-size: 1.2rem;">
-                <button onclick="broadcastPrompt()" class="hover-target">Set Prompt</button>
+            
+            <div class="control-group" style="flex-grow: 1; margin: 0 40px;">
+                <span class="label">Current Prompt</span>
+                <!-- Input Mode -->
+                <div id="prompt-input-area" style="display: flex; gap: 10px;">
+                    <input type="text" id="teacher-prompt-input" placeholder="Type a prompt..." style="width: 100%;">
+                    <button onclick="setPrompt()" style="padding: 10px 20px;">Set</button>
+                </div>
+                <!-- Display Mode -->
+                <div id="prompt-display-area" class="prompt-text" style="display: none;"></div>
             </div>
-            <div>
-                <div style="font-family:'Space Mono'; font-size: 0.8rem;">Timer</div>
-                <div class="timer-display" id="timer">05:00</div>
-                <button onclick="startTimer()" style="padding: 5px 10px; font-size: 0.7rem;" class="hover-target">Start</button>
+
+            <div class="control-group">
+                <span class="label">Timer</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span id="timer-display" style="font-family: 'DM Serif Display'; font-size: 2rem;">05:00</span>
+                    <button onclick="startTimer()" style="padding: 5px 15px; font-size: 0.8rem;">▶</button>
+                </div>
             </div>
         </div>
 
-        <div id="bubble-container"></div>
+        <div class="student-sidebar">
+            <div class="label" style="margin-bottom: 10px;">In the Inkwell (<span id="student-count">0</span>)</div>
+            <div id="student-list-container">
+                <!-- List items go here -->
+            </div>
+        </div>
 
-        <div style="position: absolute; bottom: 40px; z-index: 20;">
-            <button class="primary hover-target" onclick="randomizePick()">Select Random Voice</button>
+        <!-- The Physics Container -->
+        <div id="bubble-layer"></div>
+
+        <div class="dashboard-bottom">
+            <button onclick="randomizeBubble()" style="background: var(--accent); font-size: 1.2rem; padding: 20px 50px; box-shadow: 0 10px 30px rgba(108, 92, 231, 0.4);">
+                ✦ Pick a Voice
+            </button>
         </div>
     </div>
 
-    <!-- 4. STUDENT WRITING DESK -->
+    <!-- 4. STUDENT WRITING -->
     <div id="screen-student-desk" class="screen">
-        <div class="prompt-display" id="student-prompt-view">Waiting for the prompt...</div>
-        <textarea id="student-response" placeholder="Let your thoughts flow here..." class="hover-target"></textarea>
-        <button class="primary hover-target" onclick="submitResponse()" id="submit-btn">Publish to Room</button>
-        <div class="waiting-text" id="submit-status"></div>
+        <div class="card" style="max-width: 600px; width: 90%;">
+            <span class="label" style="color: var(--accent);">The Prompt</span>
+            <h2 id="student-prompt-view" style="color: var(--text-main); font-family: 'DM Serif Display'; font-size: 1.8rem; margin: 10px 0 30px;">Waiting for teacher...</h2>
+            
+            <textarea id="student-response" placeholder="Write your first five lines..."></textarea>
+            
+            <div id="submit-section" style="margin-top: 20px; width: 100%;">
+                <button onclick="submitResponse()" style="width: 100%;">Submit Response</button>
+            </div>
+            <div id="submitted-msg" style="display: none; text-align: center; color: var(--accent); margin-top: 20px;">
+                Response Floating in the Ether.
+            </div>
+        </div>
     </div>
 
     <script>
-        // --- 1. VISUAL EFFECTS (From Blog) ---
-        const cursor = document.querySelector('.cursor');
-        document.addEventListener('mousemove', (e) => {
-            gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
-        });
-
-        // Hover Logic
-        function refreshHoverTargets() {
-            const targets = document.querySelectorAll('button, input, textarea, .bubble');
-            targets.forEach(el => {
-                el.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
-                el.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
-            });
-        }
-        refreshHoverTargets();
-
-        // Floating Letters
-        const container = document.getElementById('floating-letters');
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz?!,.;";
-        for(let i=0; i<30; i++) {
-            let span = document.createElement('span');
-            span.innerText = chars[Math.floor(Math.random()*chars.length)];
-            span.className = 'floater';
-            span.style.left = Math.random()*100 + 'vw';
-            span.style.top = Math.random()*100 + 'vh';
-            span.style.fontSize = (Math.random()*3 + 1) + 'rem';
-            container.appendChild(span);
-            
-            gsap.to(span, {
-                y: `+=${Math.random()*100 - 50}`,
-                x: `+=${Math.random()*100 - 50}`,
-                rotation: Math.random()*360,
-                duration: Math.random()*10 + 10,
-                repeat: -1, yoyo: true, ease: "sine.inOut"
-            });
-        }
-
-        // --- 2. APP STATE & ROUTING ---
-        const APP_PREFIX = 'inkwell-lit-v1-'; 
+        // --- APP STATE ---
+        const APP_ID = 'inkwell-v2-';
         let myPeer = null;
-        let connections = []; // For Teacher
-        let hostConn = null; // For Student
-        let role = null; // 'teacher' or 'student'
-        let responses = []; // Array of submission objects
+        let connections = []; // Teacher: list of student conns
+        let hostConn = null;  // Student: conn to teacher
+        let students = [];    // Teacher: list of {id, name}
+        
+        // Physics State
+        let bubbles = []; // { id, x, y, vx, vy, radius, text, author, el, selected }
+        let pickedHistory = new Set();
+        let animationFrameId;
 
-        function router(screenName) {
+        // --- ROUTING ---
+        function router(screen) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(`screen-${screenName}`).classList.add('active');
-            setTimeout(refreshHoverTargets, 500); // Re-bind hovers
+            document.getElementById(`screen-${screen}`).classList.add('active');
         }
-
         function showStudentLogin() { router('student-login'); }
 
-        // --- 3. TEACHER LOGIC ---
-        function setupTeacher() {
-            role = 'teacher';
-            // Generate a random 4-digit code
+        // --- TEACHER LOGIC ---
+        function initTeacher() {
             const code = Math.floor(1000 + Math.random() * 9000).toString();
-            
-            // Initialize PeerJS
-            myPeer = new Peer(APP_PREFIX + code);
+            myPeer = new Peer(APP_ID + code);
 
-            myPeer.on('open', (id) => {
+            myPeer.on('open', () => {
                 document.getElementById('display-code').innerText = code;
                 router('teacher');
+                startPhysicsLoop();
             });
 
-            myPeer.on('error', (err) => {
-                alert("Connection Error (Code might be taken, try again): " + err);
-                location.reload();
-            });
-
-            // Listen for students
             myPeer.on('connection', (conn) => {
                 connections.push(conn);
-                
-                conn.on('data', (data) => {
-                    handleData(data);
-                });
+                conn.on('data', (data) => handleTeacherData(data, conn));
+                conn.on('close', () => removeStudent(conn.peer));
             });
         }
 
-        function broadcastPrompt() {
-            const prompt = document.getElementById('teacher-prompt').value;
-            connections.forEach(conn => {
-                conn.send({ type: 'PROMPT', text: prompt });
-            });
-            // Show feedback effect?
+        function handleTeacherData(data, conn) {
+            if(data.type === 'JOIN') {
+                students.push({ id: conn.peer, name: data.name });
+                updateStudentList();
+            }
+            if(data.type === 'SUBMIT') {
+                spawnBubble(data.name, data.text, conn.peer);
+            }
         }
 
-        let timerInterval;
+        function updateStudentList() {
+            const list = document.getElementById('student-list-container');
+            document.getElementById('student-count').innerText = students.length;
+            list.innerHTML = students.map(s => `<div class="student-item">${s.name}</div>`).join('');
+        }
+
+        function removeStudent(peerId) {
+            students = students.filter(s => s.id !== peerId);
+            updateStudentList();
+        }
+
+        function setPrompt() {
+            const txt = document.getElementById('teacher-prompt-input').value;
+            if(!txt) return;
+
+            // Update UI
+            document.getElementById('prompt-input-area').style.display = 'none';
+            const display = document.getElementById('prompt-display-area');
+            display.style.display = 'block';
+            display.innerText = txt;
+
+            // Broadcast
+            connections.forEach(c => c.send({ type: 'PROMPT', text: txt }));
+        }
+
+        let timerInt;
         function startTimer() {
-            let time = 5 * 60; // 5 minutes
-            const display = document.getElementById('timer');
-            clearInterval(timerInterval);
-            
-            timerInterval = setInterval(() => {
-                let m = Math.floor(time / 60);
-                let s = time % 60;
-                display.innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
-                if(time <= 0) {
-                    clearInterval(timerInterval);
-                    display.style.color = 'var(--accent)';
-                }
-                time--;
+            let sec = 300;
+            clearInterval(timerInt);
+            timerInt = setInterval(() => {
+                sec--;
+                let m = Math.floor(sec/60);
+                let s = sec%60;
+                document.getElementById('timer-display').innerText = 
+                    `${m}:${s<10?'0':''}${s}`;
+                if(sec<=0) clearInterval(timerInt);
             }, 1000);
         }
 
-        function handleData(data) {
-            if (data.type === 'SUBMIT') {
-                createBubble(data.name, data.text);
-            }
-        }
-
-        // --- 4. STUDENT LOGIC ---
+        // --- STUDENT LOGIC ---
         function joinSession() {
             const code = document.getElementById('join-code').value;
             const name = document.getElementById('student-name').value;
-            
-            if(code.length !== 4 || !name) {
-                alert("Please enter a valid code and name.");
-                return;
-            }
+            if(!code || !name) return alert("Missing info");
 
-            myPeer = new Peer(); // Auto-generate ID for student
-
-            myPeer.on('open', (id) => {
-                hostConn = myPeer.connect(APP_PREFIX + code);
-
+            myPeer = new Peer();
+            myPeer.on('open', () => {
+                hostConn = myPeer.connect(APP_ID + code);
+                
                 hostConn.on('open', () => {
+                    hostConn.send({ type: 'JOIN', name: name });
                     router('student-desk');
-                    role = 'student';
                 });
 
                 hostConn.on('data', (data) => {
                     if(data.type === 'PROMPT') {
-                        const el = document.getElementById('student-prompt-view');
-                        el.innerText = data.text;
-                        gsap.from(el, { opacity: 0, y: -20, duration: 1 });
+                        document.getElementById('student-prompt-view').innerText = data.text;
                     }
                 });
 
-                hostConn.on('error', (err) => alert("Could not connect to room."));
+                hostConn.on('error', () => alert("Connection failed"));
             });
-            
-            myPeer.on('error', (err) => alert("Connection Failed. Check Code."));
         }
 
         function submitResponse() {
-            const text = document.getElementById('student-response').value;
+            const txt = document.getElementById('student-response').value;
             const name = document.getElementById('student-name').value;
-            
-            if(!text) return;
+            if(!txt) return;
 
-            if(hostConn && hostConn.open) {
-                hostConn.send({ type: 'SUBMIT', name: name, text: text });
-                
-                // UI Feedback
-                document.getElementById('student-response').disabled = true;
-                document.getElementById('submit-btn').style.display = 'none';
-                document.getElementById('submit-status').innerText = "Your words have been cast into the inkwell.";
-            } else {
-                alert("Connection lost.");
+            hostConn.send({ type: 'SUBMIT', text: txt, name: name });
+            document.getElementById('submit-section').style.display = 'none';
+            document.getElementById('submitted-msg').style.display = 'block';
+        }
+
+        // --- BUBBLE PHYSICS ENGINE (The Core Request) ---
+        
+        function spawnBubble(author, text, id) {
+            const container = document.getElementById('bubble-layer');
+            const el = document.createElement('div');
+            el.className = 'bubble';
+            el.innerHTML = `<div class="bubble-text">"${text}"</div><div class="bubble-author">${author}</div>`;
+            
+            // Random Size between 120 and 180
+            const size = 140 + Math.random() * 60; 
+            el.style.width = size + 'px';
+            el.style.height = size + 'px';
+
+            container.appendChild(el);
+
+            // Spawn at CENTER screen (popping up)
+            const b = {
+                id: id + Math.random(), // Unique internal ID
+                el: el,
+                x: window.innerWidth / 2,
+                y: window.innerHeight / 2,
+                vx: (Math.random() - 0.5) * 8, // Fast initial velocity
+                vy: (Math.random() - 0.5) * 8,
+                radius: size / 2 + 10, // Buffer
+                mass: size,
+                selected: false
+            };
+            bubbles.push(b);
+        }
+
+        function startPhysicsLoop() {
+            if(animationFrameId) cancelAnimationFrame(animationFrameId);
+            
+            function loop() {
+                updatePhysics();
+                animationFrameId = requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        function updatePhysics() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            for (let i = 0; i < bubbles.length; i++) {
+                let b = bubbles[i];
+                if (b.selected) continue; // Don't move the selected one with physics
+
+                // 1. Move
+                b.x += b.vx;
+                b.y += b.vy;
+
+                // 2. Wall Bounce (Dampened)
+                if (b.x - b.radius < 0) { b.x = b.radius; b.vx *= -0.8; }
+                if (b.x + b.radius > width) { b.x = width - b.radius; b.vx *= -0.8; }
+                if (b.y - b.radius < 0) { b.y = b.radius; b.vy *= -0.8; }
+                if (b.y + b.radius > height) { b.y = height - b.radius; b.vy *= -0.8; }
+
+                // 3. Friction (Slow down slightly)
+                b.vx *= 0.98;
+                b.vy *= 0.98;
+
+                // 4. Gentle Float (Ambient motion)
+                b.vx += (Math.random() - 0.5) * 0.05;
+                b.vy += (Math.random() - 0.5) * 0.05;
+
+                // 5. Collision & Squeezing (Repulsion)
+                for (let j = i + 1; j < bubbles.length; j++) {
+                    let b2 = bubbles[j];
+                    if (b2.selected) continue;
+
+                    let dx = b2.x - b.x;
+                    let dy = b2.y - b.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    let minDist = b.radius + b2.radius;
+
+                    if (dist < minDist) {
+                        // Overlap detected - Push apart
+                        let angle = Math.atan2(dy, dx);
+                        let tx = Math.cos(angle);
+                        let ty = Math.sin(angle);
+                        
+                        // Spring force (the "Squeeze")
+                        let force = (minDist - dist) * 0.05; 
+
+                        b.vx -= tx * force;
+                        b.vy -= ty * force;
+                        b2.vx += tx * force;
+                        b2.vy += ty * force;
+                    }
+                }
+
+                // Apply to DOM
+                b.el.style.left = (b.x - b.radius + 10) + 'px'; // +10 correction for padding diff
+                b.el.style.top = (b.y - b.radius + 10) + 'px';
+                // Reset visual styles if not selected
+                b.el.style.transform = `scale(1)`;
+                b.el.classList.remove('selected');
             }
         }
 
-        // --- 5. BUBBLE PHYSICS & RANDOMIZER (TEACHER VIEW) ---
-        function createBubble(author, text) {
-            const container = document.getElementById('bubble-container');
-            const bubble = document.createElement('div');
-            bubble.classList.add('bubble');
-            bubble.innerHTML = `"${text}"<span class="author">— ${author}</span>`;
+        // --- RANDOMIZER ---
+        function randomizeBubble() {
+            // 1. Reset any currently selected bubble
+            const prev = bubbles.find(b => b.selected);
+            if (prev) {
+                prev.selected = false;
+                // Give it a little push away so it doesn't stick
+                prev.vx = (Math.random() - 0.5) * 5;
+                prev.vy = (Math.random() - 0.5) * 5;
+            }
+
+            // 2. Filter available bubbles
+            const available = bubbles.filter(b => !pickedHistory.has(b.id));
+
+            if (available.length === 0) {
+                if (bubbles.length === 0) return alert("No responses yet!");
+                alert("Cycle Complete! Resetting selection history.");
+                pickedHistory.clear();
+                randomizeBubble(); // Recursively call to pick one immediately
+                return;
+            }
+
+            // 3. Pick Logic
+            const winner = available[Math.floor(Math.random() * available.length)];
+            pickedHistory.add(winner.id);
+            winner.selected = true;
+
+            // 4. Animate to Center
+            winner.el.classList.add('selected');
+            winner.el.style.left = '50%';
+            winner.el.style.top = '50%';
+            winner.el.style.transform = 'translate(-50%, -50%) scale(1.5)';
             
-            // Random Position
-            const x = Math.random() * (window.innerWidth - 300);
-            const y = Math.random() * (window.innerHeight - 200);
-            
-            bubble.style.left = x + 'px';
-            bubble.style.top = y + 'px';
-            
-            container.appendChild(bubble);
-            responses.push(bubble);
-            refreshHoverTargets();
-
-            // Animate Entrance
-            gsap.fromTo(bubble, 
-                { scale: 0, opacity: 0 },
-                { scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.7)" }
-            );
-
-            // Floating Physics
-            gsap.to(bubble, {
-                x: `+=${Math.random() * 100 - 50}`,
-                y: `+=${Math.random() * 100 - 50}`,
-                duration: Math.random() * 5 + 5,
-                repeat: -1,
-                yoyo: true,
-                ease: "sine.inOut"
-            });
-        }
-
-        function randomizePick() {
-            if(responses.length === 0) return;
-
-            // Reset previous highlights
-            responses.forEach(b => {
-                b.classList.remove('highlighted');
-                gsap.to(b, { scale: 1, opacity: 0.5, duration: 0.5 });
-            });
-
-            // Pick random
-            const luckyBubble = responses[Math.floor(Math.random() * responses.length)];
-            
-            // Animation Sequence
-            // 1. Dim others
-            // 2. Center and Expand Winner
-            const rect = luckyBubble.getBoundingClientRect();
-            const centerX = window.innerWidth / 2 - rect.width / 2;
-            const centerY = window.innerHeight / 2 - rect.height / 2;
-
-            luckyBubble.classList.add('highlighted');
-            
-            gsap.to(luckyBubble, {
-                scale: 1.5,
-                opacity: 1,
-                x: 0, // Reset floats for a moment (simplified) or just override
-                zIndex: 100,
-                duration: 1,
-                ease: "expo.out"
-            });
+            // Note: We stop updating x/y in the physics loop when selected=true
         }
 
     </script>
