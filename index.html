@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Inkwell | First Five Activity</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,400&family=Space+Mono:ital,wght@0,400;0,700&display=swap" rel="stylesheet">
+    
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #050505; /* Deep Ink Black */
+            --paper: #f0f0eb; /* Parchment */
+            --accent: #d04e4e; /* Grading Red */
+            --ink: #1a1a1a;
+            --gold: #c5a059;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--paper);
+            font-family: 'Cormorant Garamond', serif;
+            overflow: hidden; /* Prevent scroll */
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* --- IMMERSIVE BACKGROUND --- */
+        .noise {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: -1; opacity: 0.08;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)"/%3E%3C/svg%3E');
+        }
+        
+        #floating-letters {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -2; pointer-events: none;
+        }
+        
+        .floater {
+            position: absolute; font-family: 'Cormorant Garamond';
+            color: rgba(255,255,255,0.03); user-select: none;
+        }
+
+        /* --- CURSOR --- */
+        .cursor {
+            position: fixed; top: 0; left: 0; width: 20px; height: 20px;
+            border: 1px solid var(--paper); border-radius: 50%;
+            pointer-events: none; z-index: 10000;
+            transform: translate(-50%, -50%); mix-blend-mode: difference;
+            transition: width 0.3s, height 0.3s, background 0.3s;
+        }
+        .cursor.hovered { background: var(--paper); width: 60px; height: 60px; border: none; }
+
+        /* --- UI LAYOUTS --- */
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s;
+            padding: 2rem;
+        }
+        .screen.active { opacity: 1; pointer-events: auto; }
+
+        h1 { font-size: 4rem; margin-bottom: 2rem; font-weight: 300; text-align: center; }
+        h2 { font-family: 'Space Mono'; font-size: 1rem; color: var(--accent); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* --- INPUTS & BUTTONS --- */
+        input, textarea {
+            background: transparent; border: none; border-bottom: 1px solid var(--paper);
+            color: var(--paper); font-family: 'Space Mono'; font-size: 1.5rem;
+            padding: 10px; margin-bottom: 2rem; width: 300px; text-align: center;
+            outline: none; transition: border 0.3s;
+        }
+        textarea {
+            width: 100%; max-width: 600px; height: 150px;
+            border: 1px solid rgba(255,255,255,0.2); text-align: left; resize: none;
+        }
+        input:focus, textarea:focus { border-color: var(--accent); }
+
+        .btn-group { display: flex; gap: 20px; }
+        
+        button {
+            background: transparent; border: 1px solid var(--paper);
+            color: var(--paper); padding: 15px 30px;
+            font-family: 'Space Mono'; text-transform: uppercase;
+            font-size: 0.9rem; letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+        button:hover { background: var(--paper); color: var(--bg); }
+        button.primary { border-color: var(--accent); color: var(--accent); }
+        button.primary:hover { background: var(--accent); color: white; }
+
+        /* --- TEACHER DASHBOARD --- */
+        #teacher-dashboard { justify-content: flex-start; padding-top: 60px; }
+        .dashboard-header {
+            display: flex; justify-content: space-between; width: 100%; max-width: 1200px;
+            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px;
+            align-items: center; z-index: 10;
+        }
+        .code-display { font-size: 2rem; font-family: 'Space Mono'; color: var(--gold); }
+        .timer-display { font-size: 2rem; font-family: 'Space Mono'; }
+        
+        /* --- BUBBLES --- */
+        #bubble-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 5; overflow: hidden;
+        }
+        .bubble {
+            position: absolute;
+            max-width: 300px;
+            padding: 20px;
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
+            border-radius: 50% 50% 50% 0;
+            color: var(--paper);
+            font-size: 1.1rem;
+            line-height: 1.4;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform-origin: center center;
+            opacity: 0;
+        }
+        .bubble .author {
+            display: block; margin-top: 10px; font-family: 'Space Mono';
+            font-size: 0.7rem; color: var(--accent); text-transform: uppercase;
+        }
+        .bubble.highlighted {
+            background: var(--paper); color: var(--bg);
+            border-color: var(--gold);
+            z-index: 100;
+            box-shadow: 0 0 50px rgba(197, 160, 89, 0.3);
+        }
+
+        /* --- STUDENT VIEW --- */
+        .prompt-display {
+            font-size: 2rem; font-style: italic; max-width: 800px; text-align: center;
+            margin-bottom: 40px; color: var(--gold);
+        }
+        .waiting-text {
+            font-family: 'Space Mono'; color: #555; margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- VISUALS -->
+    <div class="cursor"></div>
+    <div class="noise"></div>
+    <div id="floating-letters"></div>
+
+    <!-- 1. LANDING SCREEN -->
+    <div id="screen-landing" class="screen active">
+        <h2>The Inkwell</h2>
+        <h1>Who enters the room?</h1>
+        <div class="btn-group">
+            <button class="hover-target" onclick="setupTeacher()">I am the Curator (Teacher)</button>
+            <button class="hover-target" onclick="showStudentLogin()">I am a Writer (Student)</button>
+        </div>
+    </div>
+
+    <!-- 2. STUDENT LOGIN -->
+    <div id="screen-student-login" class="screen">
+        <h2>Join the Session</h2>
+        <input type="text" id="join-code" placeholder="4-Digit Code" maxlength="4" class="hover-target">
+        <input type="text" id="student-name" placeholder="Your Name" class="hover-target">
+        <div class="btn-group">
+            <button onclick="router('landing')" class="hover-target">Back</button>
+            <button class="primary hover-target" onclick="joinSession()">Enter</button>
+        </div>
+    </div>
+
+    <!-- 3. TEACHER DASHBOARD -->
+    <div id="screen-teacher" class="screen">
+        <div class="dashboard-header">
+            <div>
+                <div style="font-family:'Space Mono'; font-size: 0.8rem;">Session Code</div>
+                <div class="code-display" id="display-code">----</div>
+            </div>
+            <div>
+                <input type="text" id="teacher-prompt" placeholder="Set the prompt here..." style="width: 400px; text-align: left; font-size: 1.2rem;">
+                <button onclick="broadcastPrompt()" class="hover-target">Set Prompt</button>
+            </div>
+            <div>
+                <div style="font-family:'Space Mono'; font-size: 0.8rem;">Timer</div>
+                <div class="timer-display" id="timer">05:00</div>
+                <button onclick="startTimer()" style="padding: 5px 10px; font-size: 0.7rem;" class="hover-target">Start</button>
+            </div>
+        </div>
+
+        <div id="bubble-container"></div>
+
+        <div style="position: absolute; bottom: 40px; z-index: 20;">
+            <button class="primary hover-target" onclick="randomizePick()">Select Random Voice</button>
+        </div>
+    </div>
+
+    <!-- 4. STUDENT WRITING DESK -->
+    <div id="screen-student-desk" class="screen">
+        <div class="prompt-display" id="student-prompt-view">Waiting for the prompt...</div>
+        <textarea id="student-response" placeholder="Let your thoughts flow here..." class="hover-target"></textarea>
+        <button class="primary hover-target" onclick="submitResponse()" id="submit-btn">Publish to Room</button>
+        <div class="waiting-text" id="submit-status"></div>
+    </div>
+
+    <script>
+        // --- 1. VISUAL EFFECTS (From Blog) ---
+        const cursor = document.querySelector('.cursor');
+        document.addEventListener('mousemove', (e) => {
+            gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
+        });
+
+        // Hover Logic
+        function refreshHoverTargets() {
+            const targets = document.querySelectorAll('button, input, textarea, .bubble');
+            targets.forEach(el => {
+                el.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
+                el.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
+            });
+        }
+        refreshHoverTargets();
+
+        // Floating Letters
+        const container = document.getElementById('floating-letters');
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz?!,.;";
+        for(let i=0; i<30; i++) {
+            let span = document.createElement('span');
+            span.innerText = chars[Math.floor(Math.random()*chars.length)];
+            span.className = 'floater';
+            span.style.left = Math.random()*100 + 'vw';
+            span.style.top = Math.random()*100 + 'vh';
+            span.style.fontSize = (Math.random()*3 + 1) + 'rem';
+            container.appendChild(span);
+            
+            gsap.to(span, {
+                y: `+=${Math.random()*100 - 50}`,
+                x: `+=${Math.random()*100 - 50}`,
+                rotation: Math.random()*360,
+                duration: Math.random()*10 + 10,
+                repeat: -1, yoyo: true, ease: "sine.inOut"
+            });
+        }
+
+        // --- 2. APP STATE & ROUTING ---
+        const APP_PREFIX = 'inkwell-lit-v1-'; 
+        let myPeer = null;
+        let connections = []; // For Teacher
+        let hostConn = null; // For Student
+        let role = null; // 'teacher' or 'student'
+        let responses = []; // Array of submission objects
+
+        function router(screenName) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(`screen-${screenName}`).classList.add('active');
+            setTimeout(refreshHoverTargets, 500); // Re-bind hovers
+        }
+
+        function showStudentLogin() { router('student-login'); }
+
+        // --- 3. TEACHER LOGIC ---
+        function setupTeacher() {
+            role = 'teacher';
+            // Generate a random 4-digit code
+            const code = Math.floor(1000 + Math.random() * 9000).toString();
+            
+            // Initialize PeerJS
+            myPeer = new Peer(APP_PREFIX + code);
+
+            myPeer.on('open', (id) => {
+                document.getElementById('display-code').innerText = code;
+                router('teacher');
+            });
+
+            myPeer.on('error', (err) => {
+                alert("Connection Error (Code might be taken, try again): " + err);
+                location.reload();
+            });
+
+            // Listen for students
+            myPeer.on('connection', (conn) => {
+                connections.push(conn);
+                
+                conn.on('data', (data) => {
+                    handleData(data);
+                });
+            });
+        }
+
+        function broadcastPrompt() {
+            const prompt = document.getElementById('teacher-prompt').value;
+            connections.forEach(conn => {
+                conn.send({ type: 'PROMPT', text: prompt });
+            });
+            // Show feedback effect?
+        }
+
+        let timerInterval;
+        function startTimer() {
+            let time = 5 * 60; // 5 minutes
+            const display = document.getElementById('timer');
+            clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                let m = Math.floor(time / 60);
+                let s = time % 60;
+                display.innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+                if(time <= 0) {
+                    clearInterval(timerInterval);
+                    display.style.color = 'var(--accent)';
+                }
+                time--;
+            }, 1000);
+        }
+
+        function handleData(data) {
+            if (data.type === 'SUBMIT') {
+                createBubble(data.name, data.text);
+            }
+        }
+
+        // --- 4. STUDENT LOGIC ---
+        function joinSession() {
+            const code = document.getElementById('join-code').value;
+            const name = document.getElementById('student-name').value;
+            
+            if(code.length !== 4 || !name) {
+                alert("Please enter a valid code and name.");
+                return;
+            }
+
+            myPeer = new Peer(); // Auto-generate ID for student
+
+            myPeer.on('open', (id) => {
+                hostConn = myPeer.connect(APP_PREFIX + code);
+
+                hostConn.on('open', () => {
+                    router('student-desk');
+                    role = 'student';
+                });
+
+                hostConn.on('data', (data) => {
+                    if(data.type === 'PROMPT') {
+                        const el = document.getElementById('student-prompt-view');
+                        el.innerText = data.text;
+                        gsap.from(el, { opacity: 0, y: -20, duration: 1 });
+                    }
+                });
+
+                hostConn.on('error', (err) => alert("Could not connect to room."));
+            });
+            
+            myPeer.on('error', (err) => alert("Connection Failed. Check Code."));
+        }
+
+        function submitResponse() {
+            const text = document.getElementById('student-response').value;
+            const name = document.getElementById('student-name').value;
+            
+            if(!text) return;
+
+            if(hostConn && hostConn.open) {
+                hostConn.send({ type: 'SUBMIT', name: name, text: text });
+                
+                // UI Feedback
+                document.getElementById('student-response').disabled = true;
+                document.getElementById('submit-btn').style.display = 'none';
+                document.getElementById('submit-status').innerText = "Your words have been cast into the inkwell.";
+            } else {
+                alert("Connection lost.");
+            }
+        }
+
+        // --- 5. BUBBLE PHYSICS & RANDOMIZER (TEACHER VIEW) ---
+        function createBubble(author, text) {
+            const container = document.getElementById('bubble-container');
+            const bubble = document.createElement('div');
+            bubble.classList.add('bubble');
+            bubble.innerHTML = `"${text}"<span class="author">— ${author}</span>`;
+            
+            // Random Position
+            const x = Math.random() * (window.innerWidth - 300);
+            const y = Math.random() * (window.innerHeight - 200);
+            
+            bubble.style.left = x + 'px';
+            bubble.style.top = y + 'px';
+            
+            container.appendChild(bubble);
+            responses.push(bubble);
+            refreshHoverTargets();
+
+            // Animate Entrance
+            gsap.fromTo(bubble, 
+                { scale: 0, opacity: 0 },
+                { scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.7)" }
+            );
+
+            // Floating Physics
+            gsap.to(bubble, {
+                x: `+=${Math.random() * 100 - 50}`,
+                y: `+=${Math.random() * 100 - 50}`,
+                duration: Math.random() * 5 + 5,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut"
+            });
+        }
+
+        function randomizePick() {
+            if(responses.length === 0) return;
+
+            // Reset previous highlights
+            responses.forEach(b => {
+                b.classList.remove('highlighted');
+                gsap.to(b, { scale: 1, opacity: 0.5, duration: 0.5 });
+            });
+
+            // Pick random
+            const luckyBubble = responses[Math.floor(Math.random() * responses.length)];
+            
+            // Animation Sequence
+            // 1. Dim others
+            // 2. Center and Expand Winner
+            const rect = luckyBubble.getBoundingClientRect();
+            const centerX = window.innerWidth / 2 - rect.width / 2;
+            const centerY = window.innerHeight / 2 - rect.height / 2;
+
+            luckyBubble.classList.add('highlighted');
+            
+            gsap.to(luckyBubble, {
+                scale: 1.5,
+                opacity: 1,
+                x: 0, // Reset floats for a moment (simplified) or just override
+                zIndex: 100,
+                duration: 1,
+                ease: "expo.out"
+            });
+        }
+
+    </script>
+</body>
+</html>
