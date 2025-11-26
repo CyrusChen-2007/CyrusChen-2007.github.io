@@ -25,11 +25,26 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background: var(--bg-gradient);
+            background: #f0f2f5; /* Fallback */
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
             overflow: hidden;
             width: 100vw; height: 100vh;
+        }
+
+        /* --- VIVACIOUS BACKGROUND (Restored) --- */
+        .orb {
+            position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.6; z-index: -1;
+            animation: floatOrb 20s infinite ease-in-out;
+            pointer-events: none;
+        }
+        .orb-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #ff9a9e; animation-delay: 0s; }
+        .orb-2 { bottom: -20%; right: -10%; width: 60vw; height: 60vw; background: #a18cd1; animation-delay: -5s; }
+        .orb-3 { top: 40%; left: 40%; width: 40vw; height: 40vw; background: #fad0c4; animation-delay: -10s; }
+
+        @keyframes floatOrb {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, -50px); }
         }
 
         /* --- LAYOUT --- */
@@ -44,10 +59,10 @@
         h1 { font-family: 'DM Serif Display', serif; font-size: 3.5rem; margin-bottom: 1rem; }
         
         .card {
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.65);
             backdrop-filter: blur(20px);
             padding: 3rem; border-radius: 24px;
-            border: 1px solid white;
+            border: 1px solid rgba(255,255,255,0.8);
             box-shadow: 0 20px 40px rgba(0,0,0,0.05);
             display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
             max-width: 500px; width: 90%;
@@ -69,11 +84,12 @@
         }
         button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         button.secondary { background: white; color: var(--text-main); border: 1px solid #ddd; }
+        button.small { padding: 6px 12px; font-size: 0.8rem; }
 
         /* --- BUBBLE UNIVERSE --- */
         #universe-layer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 20; pointer-events: none; /* Bubbles handle their own events */
+            z-index: 20; pointer-events: none;
         }
         
         #thread-canvas {
@@ -84,10 +100,10 @@
         .bubble {
             position: absolute;
             width: fit-content; max-width: 280px; min-width: 120px;
-            padding: 18px;
-            background: rgba(255, 255, 255, 0.65);
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.9);
             border-radius: 20px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.05);
             text-align: left;
@@ -106,7 +122,6 @@
         }
         .bubble-author { font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent); }
         
-        /* Actions */
         .bubble-actions { display: flex; gap: 10px; }
         .action-btn { 
             cursor: pointer; display: flex; align-items: center; gap: 4px; 
@@ -115,32 +130,37 @@
         .action-btn:hover { color: var(--accent); }
         .action-btn.liked { color: #e17055; }
 
-        /* Reply Style */
         .bubble.reply {
-            background: rgba(240, 240, 255, 0.7);
+            background: rgba(240, 240, 255, 0.65);
             border-color: var(--accent-light);
-            font-size: 0.9rem;
-            max-width: 220px;
+            font-size: 0.9rem; max-width: 220px;
         }
 
-        /* Selected / Roulette Style */
         .bubble.highlight { border: 2px solid var(--accent); background: white; z-index: 100; transform: scale(1.1); }
         .bubble.winner { 
-            border: 3px solid var(--accent); 
-            background: white; 
+            border: 3px solid var(--accent); background: white; 
             box-shadow: 0 0 60px rgba(108, 92, 231, 0.4);
             z-index: 200;
         }
 
-        /* --- DASHBOARD UI OVERLAYS --- */
-        .hud {
-            position: fixed; z-index: 50; padding: 20px;
-            background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);
+        /* --- UI OVERLAYS (HUD) --- */
+        .hud-bar {
+            position: fixed; z-index: 50; padding: 15px 25px;
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(15px);
             border-radius: 16px; border: 1px solid white;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            display: flex; gap: 20px; align-items: center;
         }
-        .hud-top { top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; align-items: center; }
-        .hud-bottom { bottom: 30px; left: 50%; transform: translateX(-50%); }
+        
+        /* Teacher Top Bar */
+        #teacher-hud { top: 20px; left: 50%; transform: translateX(-50%); }
+        
+        /* Student Top Bar */
+        #student-hud { top: 20px; left: 50%; transform: translateX(-50%); width: 80%; max-width: 800px; justify-content: center; text-align: center; }
+
+        .divider { width: 1px; height: 30px; background: #ddd; }
+        
+        .prompt-display-text { font-family: 'DM Serif Display', serif; font-size: 1.2rem; max-width: 400px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
         /* Reply Modal */
         #reply-modal {
@@ -152,6 +172,11 @@
     </style>
 </head>
 <body>
+
+    <!-- Background Decoration -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
 
     <!-- Thread Drawing Layer -->
     <canvas id="thread-canvas"></canvas>
@@ -195,22 +220,45 @@
     <!-- 4. SHARED UNIVERSE VIEW (Teacher & Student) -->
     <div id="screen-universe" class="screen">
         
-        <!-- Teacher Controls -->
-        <div id="teacher-hud" class="hud hud-top" style="display: none;">
+        <!-- TEACHER HUD -->
+        <div id="teacher-hud" class="hud-bar" style="display: none;">
             <div>
-                <span style="font-size: 0.8rem; color: #888; text-transform: uppercase;">Code</span>
-                <strong id="display-code" style="font-size: 1.5rem; color: var(--accent); margin-left: 5px;">----</strong>
+                <span style="font-size: 0.7rem; color: #888; text-transform: uppercase;">Code</span>
+                <strong id="display-code" style="font-size: 1.2rem; color: var(--accent); margin-left: 5px;">----</strong>
             </div>
-            <div style="width: 1px; height: 30px; background: #ddd;"></div>
-            <input type="text" id="teacher-input" placeholder="Set Prompt..." style="width: 250px;">
-            <button class="secondary" style="padding: 8px 15px;" onclick="broadcastPrompt()">Set</button>
-            <div style="width: 1px; height: 30px; background: #ddd;"></div>
-            <button style="padding: 10px 25px;" onclick="startRoulette()">✦ Random Pick</button>
+            
+            <div class="divider"></div>
+
+            <!-- Prompt Controls -->
+            <div id="t-prompt-input-group" style="display: flex; gap: 5px;">
+                <input type="text" id="teacher-input" placeholder="Set Prompt..." style="width: 200px;">
+                <button class="secondary small" onclick="setPrompt()">Set</button>
+            </div>
+            <div id="t-prompt-display-group" style="display: none; align-items: center; gap: 10px;">
+                <span id="t-prompt-text" class="prompt-display-text">...</span>
+                <button class="secondary small" onclick="editPrompt()">✎</button>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Timer Controls -->
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <input type="number" id="timer-input" value="5" min="1" max="60" style="width: 50px; padding: 5px;">
+                <button class="small" onclick="startTimer()">▶</button>
+                <span id="timer-display" style="font-family: 'DM Serif Display'; font-size: 1.2rem; min-width: 50px;">05:00</span>
+            </div>
+
+            <div class="divider"></div>
+            
+            <button class="small" style="background: var(--accent);" onclick="startRoulette()">✦ Pick</button>
         </div>
 
-        <!-- Student HUD (Minimal) -->
-        <div id="student-hud" class="hud hud-bottom" style="display: none;">
-            Viewing Class Responses
+        <!-- STUDENT HUD (Prompt Display) -->
+        <div id="student-hud" class="hud-bar" style="display: none;">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <span style="font-size: 0.7rem; color: var(--accent); text-transform: uppercase;">The Prompt</span>
+                <span id="s-universe-prompt" style="font-family: 'DM Serif Display'; font-size: 1.2rem; line-height: 1.2;">Waiting for prompt...</span>
+            </div>
         </div>
 
     </div>
@@ -229,9 +277,9 @@
 
     <script>
         // --- CONFIG & STATE ---
-        const APP_ID = 'inkwell-v4-';
+        const APP_ID = 'inkwell-v5-final-';
         let myPeer, myId;
-        let role = 'student'; // 'teacher' or 'student'
+        let role = 'student'; 
         let connections = []; // Teacher: list of student conns
         let hostConn = null;  // Student: conn to teacher
         
@@ -290,9 +338,8 @@
         }
 
         function handleServerData(data, conn) {
-            // Central Hub for Logic
             if(data.type === 'SUBMIT') {
-                createBubble(data.text, data.author, null); // Parent null = root
+                createBubble(data.text, data.author, null); 
             }
             if(data.type === 'REPLY') {
                 createBubble(data.text, data.author, data.parentId);
@@ -306,14 +353,48 @@
             }
         }
 
-        function broadcastPrompt() {
-            currentPrompt = document.getElementById('teacher-input').value;
+        // Prompt Logic
+        function setPrompt() {
+            const txt = document.getElementById('teacher-input').value;
+            if(!txt) return;
+            currentPrompt = txt;
+            
+            // UI Toggle
+            document.getElementById('t-prompt-input-group').style.display = 'none';
+            document.getElementById('t-prompt-display-group').style.display = 'flex';
+            document.getElementById('t-prompt-text').innerText = txt;
+
             broadcast({ type: 'PROMPT', text: currentPrompt });
         }
 
+        function editPrompt() {
+            document.getElementById('t-prompt-display-group').style.display = 'none';
+            document.getElementById('t-prompt-input-group').style.display = 'flex';
+        }
+
+        // Timer Logic
+        let timerInterval;
+        function startTimer() {
+            const input = document.getElementById('timer-input');
+            let time = parseInt(input.value) * 60;
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                time--;
+                let m = Math.floor(time / 60);
+                let s = time % 60;
+                document.getElementById('timer-display').innerText = 
+                    `${m}:${s < 10 ? '0' : ''}${s}`;
+                
+                if(time <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('timer-display').style.color = 'red';
+                }
+            }, 1000);
+        }
+
         function broadcastState() {
-            // Teacher sends minimal physics/data update
-            // For smoother visual on student side, we send x/y targets
+            // Teacher sends physics update
             const payload = bubbles.map(b => ({
                 id: b.id, x: b.x, y: b.y, 
                 text: b.text, author: b.author, 
@@ -333,7 +414,6 @@
             const name = document.getElementById('student-name').value;
             if(!code || !name) return alert("Missing Code/Name");
             
-            // Store name globally
             window.studentName = name;
 
             myPeer = new Peer();
@@ -348,13 +428,17 @@
 
         function handleClientData(data) {
             if(data.type === 'PROMPT') {
-                document.getElementById('student-prompt-view').innerText = data.text;
+                currentPrompt = data.text;
+                // Update Writing View
+                document.getElementById('student-prompt-view').innerText = currentPrompt;
+                // Update Universe View (Top Bar)
+                document.getElementById('s-universe-prompt').innerText = currentPrompt;
             }
             if(data.type === 'SYNC_FULL') {
-                // Initial Load
                 currentPrompt = data.prompt;
                 document.getElementById('student-prompt-view').innerText = currentPrompt;
-                // Reconstruct bubbles locally
+                document.getElementById('s-universe-prompt').innerText = currentPrompt;
+                
                 data.bubbles.forEach(remoteB => {
                    if(!bubbles.find(b => b.id === remoteB.id)) {
                        spawnLocalBubble(remoteB);
@@ -362,17 +446,15 @@
                 });
             }
             if(data.type === 'SYNC_TICK') {
-                // Smooth Sync
                 data.bubbles.forEach(remoteB => {
                     let localB = bubbles.find(b => b.id === remoteB.id);
                     if(!localB) {
                         spawnLocalBubble(remoteB);
                     } else {
-                        // Lerp towards teacher position
                         localB.targetX = remoteB.x;
                         localB.targetY = remoteB.y;
                         localB.likes = remoteB.likes;
-                        localB.isWinner = remoteB.isWinner; // Sync winner status
+                        localB.isWinner = remoteB.isWinner;
                         updateBubbleDOM(localB);
                     }
                 });
@@ -384,19 +466,20 @@
             if(!txt) return;
             hostConn.send({ type: 'SUBMIT', text: txt, author: window.studentName });
             
-            // Switch view
+            // Switch to Universe View Immediately
             router('universe');
-            document.getElementById('student-hud').style.display = 'block';
-            startClientPhysics(); // Client interpolation loop
+            document.getElementById('student-hud').style.display = 'flex';
+            
+            // Ensure prompt is synced to top bar
+            document.getElementById('s-universe-prompt').innerText = currentPrompt || "Joined Class";
+            
+            startClientPhysics(); 
         }
 
-        // --- SHARED PHYSICS & BUBBLE LOGIC ---
+        // --- SHARED PHYSICS ---
 
         function createBubble(text, author, parentId) {
-            // Only Teacher creates the "True" bubble instance
             const id = Date.now() + Math.random().toString();
-            
-            // Spawn Position: If reply, near parent. If new, random side.
             let startX, startY;
             
             if (parentId) {
@@ -404,7 +487,6 @@
                 startX = parent ? parent.x + (Math.random()-0.5)*50 : width/2;
                 startY = parent ? parent.y + 50 : height/2;
             } else {
-                // Spawn from random side angle
                 const angle = Math.random() * Math.PI * 2;
                 const dist = Math.min(width, height) / 2 + 100;
                 startX = width/2 + Math.cos(angle) * dist;
@@ -415,18 +497,17 @@
                 id, text, author, parentId,
                 x: startX, y: startY,
                 vx: 0, vy: 0,
-                radius: 60, // approximate, updated by DOM
+                radius: 60,
                 likes: 0,
                 isWinner: false
             };
             
             bubbles.push(newBubble);
-            spawnBubbleDOM(newBubble); // Teacher's DOM
-            broadcastState(); // Tell everyone
+            spawnBubbleDOM(newBubble);
+            broadcastState();
         }
 
         function spawnLocalBubble(data) {
-            // Students create a local copy
             const b = { ...data, vx:0, vy:0, targetX: data.x, targetY: data.y };
             bubbles.push(b);
             spawnBubbleDOM(b);
@@ -454,7 +535,6 @@
             el.innerHTML = content;
             document.getElementById('universe-layer').appendChild(el);
             
-            // Update radius based on real size
             const rect = el.getBoundingClientRect();
             b.radius = Math.max(rect.width, rect.height) / 2 + 10;
         }
@@ -463,32 +543,25 @@
             const el = document.getElementById('dom-' + b.id);
             if(!el) return;
             
-            // Update Pos
             if(role === 'student') {
-                // Client side interpolation
                 b.x += (b.targetX - b.x) * 0.1;
                 b.y += (b.targetY - b.y) * 0.1;
             }
 
-            el.style.left = (b.x - b.radius + 10) + 'px'; // Center alignment offset approx
+            el.style.left = (b.x - b.radius + 10) + 'px';
             el.style.top = (b.y - b.radius + 10) + 'px';
-            
-            // Update Data
             document.getElementById(`likes-${b.id}`).innerText = b.likes;
 
-            // Visual States
             if(b.isWinner) el.classList.add('winner');
             else el.classList.remove('winner');
-            
-            // Highlight logic for animation can be added here
         }
 
-        // --- PHYSICS LOOP (Teacher Only) ---
+        // --- PHYSICS LOOPS ---
         function startPhysicsLoop() {
             function loop() {
                 updatePhysics();
                 drawThreads();
-                broadcastState(); // Network Tick
+                broadcastState();
                 requestAnimationFrame(loop);
             }
             loop();
@@ -508,31 +581,30 @@
             const centerY = height / 2;
 
             bubbles.forEach((b, i) => {
-                if(b.isWinner) return; // Winner stays put
+                if(b.isWinner) return; 
 
-                // 1. Forces
                 let fx = 0, fy = 0;
 
-                // Gravity (Pull to center) - Weak Cohesion
+                // Center Gravity
                 fx += (centerX - b.x) * 0.0005;
                 fy += (centerY - b.y) * 0.0005;
 
-                // Repulsion (Separation)
+                // Repulsion
                 bubbles.forEach((other, j) => {
                     if (i === j) return;
                     const dx = b.x - other.x;
                     const dy = b.y - other.y;
                     const dist = Math.sqrt(dx*dx + dy*dy);
-                    const minDist = b.radius + other.radius + 10; // +10 buffer
+                    const minDist = b.radius + other.radius + 10; 
 
                     if (dist < minDist && dist > 0) {
-                        const force = (minDist - dist) * 0.05; // Strong repulsion
+                        const force = (minDist - dist) * 0.05; 
                         fx += (dx / dist) * force;
                         fy += (dy / dist) * force;
                     }
                 });
 
-                // Spring Force (Replies pull to Parent)
+                // Spring Force (Replies)
                 if (b.parentId) {
                     const parent = bubbles.find(p => p.id === b.parentId);
                     if (parent) {
@@ -540,7 +612,6 @@
                         const dy = parent.y - b.y;
                         const dist = Math.sqrt(dx*dx + dy*dy);
                         const targetDist = parent.radius + b.radius + 20;
-                        // Pull towards ideal distance
                         if (dist > targetDist) {
                             fx += dx * 0.002;
                             fy += dy * 0.002;
@@ -548,13 +619,11 @@
                     }
                 }
 
-                // Apply
-                b.vx = (b.vx + fx) * 0.9; // Friction
+                b.vx = (b.vx + fx) * 0.9; 
                 b.vy = (b.vy + fy) * 0.9;
                 b.x += b.vx;
                 b.y += b.vy;
 
-                // Bounds
                 if(b.x < 0) b.x = 0; if(b.x > width) b.x = width;
                 if(b.y < 0) b.y = 0; if(b.y > height) b.y = height;
 
@@ -580,12 +649,10 @@
             });
         }
 
-        // --- INTERACTION LOGIC ---
+        // --- INTERACTIONS ---
         function sendLike(id) {
-            // Optimistic update
             const b = bubbles.find(x => x.id === id);
             if(b) b.likes++; 
-            
             if(role === 'student') hostConn.send({ type: 'LIKE', id });
             else broadcastState();
         }
@@ -613,7 +680,6 @@
             closeReplyModal();
         }
 
-        // --- ROULETTE ANIMATION ---
         function startRoulette() {
             const candidates = bubbles.filter(b => !b.isWinner);
             if(candidates.length === 0) return alert("No bubbles left!");
@@ -622,17 +688,14 @@
             const maxCycles = 20;
             let speed = 100;
             
-            // Reset old winners visual
             bubbles.forEach(b => { 
                 b.isWinner = false; 
                 document.getElementById('dom-'+b.id)?.classList.remove('winner');
             });
 
             function step() {
-                // Clear highlights
                 document.querySelectorAll('.bubble').forEach(el => el.classList.remove('highlight'));
                 
-                // Pick random temp
                 const rand = candidates[Math.floor(Math.random() * candidates.length)];
                 const el = document.getElementById('dom-'+rand.id);
                 if(el) el.classList.add('highlight');
@@ -641,18 +704,14 @@
                 if(cycles < maxCycles) {
                     setTimeout(step, speed);
                 } else {
-                    // Final Winner
                     rand.isWinner = true;
                     broadcastState();
-                    
-                    // Center it visually (Teacher physics handles this usually, but let's force a push)
                     rand.vx = (width/2 - rand.x) * 0.1;
                     rand.vy = (height/2 - rand.y) * 0.1;
                 }
             }
             step();
         }
-
     </script>
 </body>
 </html>
